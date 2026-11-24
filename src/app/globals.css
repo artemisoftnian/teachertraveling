@@ -193,11 +193,120 @@ a { color: inherit; }
 .solo-copyright { margin: 0; font-size: 16px; line-height: 1.5em; }
 .solo-generic-image { display: block; width: 100%; max-width: 800px; margin: 24px auto; }
 
+/* Editor-only visual tools */
+.solo-edit-jump {
+  position: sticky;
+  top: 72px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 10px 24px;
+  overflow-x: auto;
+  background: #111113;
+  color: #fff;
+  font-family: var(--font-libre-franklin, var(--font-body));
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+.solo-edit-jump strong { margin-right: 4px; }
+.solo-edit-jump a {
+  padding: 4px 9px;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 999px;
+  color: #fff;
+  text-decoration: none;
+}
+.solo-edit-jump a:hover { background: #fff; color: #111; }
+.solo-edit-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #5bd6ff;
+  color: #111;
+  font-family: var(--font-libre-franklin, var(--font-body));
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  line-height: 15px;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.solo-photo { position: relative; }
+.solo-shell.__tina-quick-editing-enabled [data-tina-field] { outline-offset: 3px; }
+
+/* Editor-safe color presets */
+.solo-section-tone-paper { background: #fff !important; color: #000 !important; }
+.solo-section-tone-white { background: #fff !important; color: #000 !important; }
+.solo-section-tone-panel { background: var(--panel) !important; color: #000 !important; }
+.solo-section-tone-yellow { background: var(--yellow) !important; color: #000 !important; }
+.solo-section-tone-cyan { background: var(--cyan) !important; color: #000 !important; }
+.solo-section-tone-dark { background: #171717 !important; color: #fff !important; }
+.solo-section-tone-dark h1,
+.solo-section-tone-dark h2,
+.solo-section-tone-dark h3,
+.solo-section-tone-dark h4 { color: #fff !important; }
+.solo-panel-tone-paper,
+.solo-panel-tone-white { background: #fff; color: #000; padding: 24px; border-radius: 8px; }
+.solo-panel-tone-panel { background: var(--panel); color: #000; padding: 24px; border-radius: 8px; }
+.solo-panel-tone-yellow { background: var(--yellow); color: #000; padding: 24px; border-radius: 8px; }
+.solo-panel-tone-cyan { background: var(--cyan); color: #000; padding: 24px; border-radius: 8px; }
+.solo-panel-tone-dark { background: #171717; color: #fff; padding: 24px; border-radius: 8px; }
+.solo-btn-yellow { background: var(--yellow); color: #000; }
+.solo-btn-cyan { background: var(--cyan); color: #000; }
+.solo-btn-paper { background: #fff; color: #111; }
+.solo-btn-outline { background: transparent; border-color: currentColor; color: inherit; }
+
+/* Editor-safe text sizes */
+.solo-text-headline-small { font-size: 24px !important; line-height: 1.25 !important; }
+.solo-text-headline-large { font-size: 40px !important; }
+.solo-text-headline-xl { font-size: 52px !important; }
+.solo-text-body-small .prose { font-size: 13px; line-height: 1.55; }
+.solo-text-body-large .prose { font-size: 19px; line-height: 1.65; }
+.solo-text-body-xl .prose { font-size: 23px; line-height: 1.6; }
+.solo-text-body-small.solo-faq-body .prose,
+.solo-text-body-large.solo-faq-body .prose,
+.solo-text-body-xl.solo-faq-body .prose { font-size: inherit; line-height: inherit; }
+
+/* Solo section templates */
+.solo-article-inner { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; gap: 56px; }
+.solo-article-photo img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; }
+.solo-article-copy .solo-heading { margin-bottom: 20px; }
+.solo-eyebrow { margin: 0 0 12px; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.solo-text-banner { padding: 80px 0; text-align: center; }
+.solo-logo-grid-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center; gap: 32px; }
+.solo-logo-grid-list > a { display: block; text-decoration: none; text-align: center; }
+.solo-logo-tile { display: flex; align-items: center; justify-content: center; min-height: 96px; }
+.solo-logo-tile img { max-width: 160px; max-height: 72px; width: auto; object-fit: contain; }
+.solo-logo-name { display: block; margin-top: 10px; font-size: 14px; line-height: 20px; }
+.solo-newsletter { padding: 80px 0; }
+.solo-newsletter-inner { max-width: 720px; text-align: center; }
+.solo-newsletter-form { display: flex; align-items: end; justify-content: center; gap: 12px; margin-top: 24px; }
+.solo-newsletter-form .solo-field { flex: 1 1 auto; text-align: left; }
+.solo-newsletter-email { margin: 16px 0 0; font-size: 13px; line-height: 20px; opacity: .75; }
+.solo-team-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; }
+.solo-team-photo img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 4px; }
+.solo-team-card h3 { margin: 16px 0 4px; }
+.solo-team-role { margin: 0 0 12px; font-size: 14px; line-height: 20px; opacity: .75; }
+.solo-team-card a { display: inline-block; margin-top: 12px; text-decoration: underline; }
+.solo-video-frame,
+.solo-embed-frame { position: relative; width: 100%; max-width: 900px; margin: 0 auto; aspect-ratio: 16 / 9; background: #000; }
+.solo-video-frame iframe,
+.solo-embed-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.solo-video-caption { margin: 12px 0 0; text-align: center; font-size: 14px; line-height: 20px; }
+
 /* Mobile */
 @media (max-width: 992px) {
   .solo-nav, .solo-social { display: none; }
   .solo-menu-toggle { display: flex; margin-left: auto; }
   .solo-service-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .solo-article-inner { grid-template-columns: 1fr; gap: 28px; }
+  .solo-logo-grid-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .solo-team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 768px) {
   h1 { font-size: 34px; }
@@ -206,8 +315,11 @@ a { color: inherit; }
   h4 { font-size: 17px; }
   .solo-intro { min-height: 420px; padding: 48px 24px; }
   .solo-intro-copy { font-size: 18px; line-height: 1.5em; }
-  .solo-panel, .solo-quote-banner, .solo-scheduling, .solo-faq, .solo-contact { padding: 56px 0; }
+  .solo-panel, .solo-quote-banner, .solo-scheduling, .solo-faq, .solo-contact, .solo-newsletter, .solo-text-banner { padding: 56px 0; }
   .solo-service-grid { grid-template-columns: 1fr; gap: 40px; }
+  .solo-team-grid { grid-template-columns: 1fr; }
+  .solo-newsletter-form { flex-direction: column; align-items: stretch; }
+  .solo-newsletter-form .solo-field { width: 100%; }
   .solo-footer-inner { flex-direction: column; align-items: flex-start; padding: 32px 24px; }
   .solo-footer-body { text-align: left; }
   .solo-review .prose { font-size: 18px; }

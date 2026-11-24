@@ -3,8 +3,8 @@
 // renderer, so a new Tina template never crashes the site.
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { tinaField } from "tinacms/dist/react";
+import { createContext, useContext, useState, type FormEvent, type ReactNode } from "react";
+import { tinaField, useEditState } from "tinacms/dist/react";
 import { TinaMarkdown, type TinaMarkdownContent } from "tinacms/dist/rich-text";
 
 type RichTextValue = string | TinaMarkdownContent | null;
@@ -16,6 +16,7 @@ type ServiceItem = {
   image?: string | null;
   ctaLabel?: string | null;
   ctaUrl?: string | null;
+  url?: string | null;
 };
 type GalleryItem = { image?: string | null; caption?: string | null };
 type ReviewItem = { body?: RichTextValue; author?: string | null };
@@ -26,12 +27,23 @@ type Section = {
   __typename?: string;
   type?: string;
   headline?: string | null;
+  kicker?: string | null;
+  date?: string | null;
+  caption?: string | null;
   body?: RichTextValue;
   image?: string | null;
   imageAlt?: string | null;
   ctaLabel?: string | null;
   ctaUrl?: string | null;
   email?: string | null;
+  videoUrl?: string | null;
+  embedUrl?: string | null;
+  embedTitle?: string | null;
+  tone?: string | null;
+  panelTone?: string | null;
+  buttonTone?: string | null;
+  headlineSize?: string | null;
+  bodySize?: string | null;
   items?: Item[] | null;
 };
 
@@ -44,8 +56,58 @@ type Settings = {
   footerLinkLabel?: string | null;
 };
 
+type JumpItem = { id: string; label: string };
+
 const FORM_ENDPOINT = process.env.NEXT_PUBLIC_FORM_ENDPOINT;
 const CONTACT_LINK = "/#contact-1";
+
+const EditorContext = createContext(false);
+function useEditor() {
+  return useContext(EditorContext);
+}
+
+const TONES = ["paper", "white", "panel", "yellow", "cyan", "dark"];
+const PANEL_TONES = ["paper", "white", "panel", "yellow", "cyan", "dark"];
+const BUTTON_TONES = ["dark", "light", "yellow", "cyan", "paper", "outline"];
+const SIZES = ["small", "normal", "large", "xl"];
+
+const LEGACY_SECTION_BASE: Record<string, string> = {
+  Intro: "introduction",
+  Services: "services",
+  Gallery: "gallery",
+  QuoteBanner: "quotebanner",
+  ImageBanner: "imagebanner",
+  Scheduling: "scheduling",
+  Reviews: "customerreviews",
+  Faq: "frequentlyaskedquestions",
+  Contact: "contact",
+  Article: "article",
+  TextBanner: "textbanner",
+  LogoGrid: "logogrid",
+  Newsletter: "newsletter",
+  Team: "team",
+  Video: "video",
+  CodeEmbed: "codeembed",
+};
+
+const SECTION_LABELS: Record<string, string> = {
+  Intro: "Hero",
+  Services: "Programs",
+  Gallery: "Photos",
+  QuoteBanner: "Quote",
+  ImageBanner: "Photo strip",
+  Scheduling: "Schedule",
+  Reviews: "Reviews",
+  Faq: "FAQ",
+  Contact: "Contact",
+  Article: "Article",
+  TextBanner: "Text banner",
+  LogoGrid: "Logo grid",
+  Newsletter: "Newsletter",
+  Team: "Team",
+  Video: "Video",
+  CodeEmbed: "Embed",
+};
 
 function Picture({ src, alt = "", className }: { src?: string | null; alt?: string; className?: string }) {
   if (!src) return null;
@@ -91,14 +153,141 @@ function external(url?: string | null) {
   return !!url && /^https?:\/\//.test(url);
 }
 
-function Cta({ label, url, className = "solo-btn", fieldAttrs }: { label?: string | null; url?: string | null; className?: string; fieldAttrs?: FieldAttrs }) {
+function preset(value: string | null | undefined, allowed: string[], fallback: string) {
+  return value && allowed.includes(value) ? value : fallback;
+}
+
+function sectionTone(tone?: string | null) {
+  return tone && TONES.includes(tone) ? ` solo-section-tone-${tone}` : "";
+}
+
+function panelTone(tone?: string | null) {
+  return tone && PANEL_TONES.includes(tone) ? ` solo-panel-tone-${tone}` : "";
+}
+
+function buttonClass(tone?: string | null, fallback = "dark") {
+  return `solo-btn solo-btn-${preset(tone, BUTTON_TONES, fallback)}`;
+}
+
+function sizeClass(kind: "headline" | "body", size?: string | null) {
+  return `solo-text-${kind}-${preset(size, SIZES, "normal")}`;
+}
+
+function sectionKind(section: Section) {
+  return section.__typename?.replace(/^PageSections/, "") ?? section.type ?? "";
+}
+
+function sectionIdList(sections: Section[]): string[] {
+  const counts = new Map<string, number>();
+  return sections.map((section) => {
+    const kind = sectionKind(section);
+    const raw = LEGACY_SECTION_BASE[kind] ?? (kind.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase() || "section");
+    const base = raw.replace(/[^a-z0-9-]/g, "");
+    const next = (counts.get(base) ?? 0) + 1;
+    counts.set(base, next);
+    return `${base}-${next}`;
+  });
+}
+
+function sectionLabel(section: Section, index: number) {
+  const kind = sectionKind(section);
+  const name = SECTION_LABELS[kind] ?? kind ?? "Section";
+  const text = plainText(section.headline) ?? plainText(section.kicker) ?? plainText(section.body);
+  const clean = text?.replace(/\s+/g, " ").trim();
+  const short = clean && clean.length > 34 ? `${clean.slice(0, 33)}…` : clean;
+  return short || `${name} ${index + 1}`;
+}
+
+function EditBadge({ label }: { label: string }) {
+  if (!useEditor()) return null;
+  return <span className="solo-edit-badge">{label}</span>;
+}
+
+function Heading({
+  as = "h2",
+  text,
+  fieldAttrs,
+  size,
+  className,
+  label = "Edit headline",
+}: {
+  as?: "h1" | "h2";
+  text?: string | null;
+  fieldAttrs?: FieldAttrs;
+  size?: string | null;
+  className?: string;
+  label?: string;
+}) {
+  const Tag = as;
+  return (
+    <Tag className={[className, sizeClass("headline", size)].filter(Boolean).join(" ")} {...fieldAttrs}>
+      {text}<EditBadge label={label} />
+    </Tag>
+  );
+}
+
+function Copy({
+  text,
+  fieldAttrs,
+  size,
+  className,
+  label = "Edit text",
+}: {
+  text?: RichTextValue;
+  fieldAttrs?: FieldAttrs;
+  size?: string | null;
+  className?: string;
+  label?: string;
+}) {
+  return (
+    <div className={[className, sizeClass("body", size)].filter(Boolean).join(" ")} {...fieldAttrs}>
+      <RichText text={text} /><EditBadge label={label} />
+    </div>
+  );
+}
+
+function Photo({
+  src,
+  alt,
+  fieldAttrs,
+  className,
+  label = "Edit photo",
+}: {
+  src?: string | null;
+  alt?: string;
+  fieldAttrs?: FieldAttrs;
+  className?: string;
+  label?: string;
+}) {
+  return (
+    <div className={["solo-photo", className].filter(Boolean).join(" ")} {...fieldAttrs}>
+      <Picture src={src} alt={alt} /><EditBadge label={label} />
+    </div>
+  );
+}
+
+function Cta({
+  label,
+  url,
+  className = "solo-btn",
+  fieldAttrs,
+}: {
+  label?: string | null;
+  url?: string | null;
+  className?: string;
+  fieldAttrs?: FieldAttrs;
+}) {
   if (!label) return null;
   const href = url || CONTACT_LINK;
   const props = external(href) ? { target: "_blank", rel: "noreferrer" } : {};
-  return <a href={href} className={className} {...fieldAttrs} {...props}>{label}</a>;
+  return (
+    <a href={href} className={className} {...fieldAttrs} {...props}>
+      {label}<EditBadge label="Edit button" />
+    </a>
+  );
 }
 
-function Carousel<T>({ items, render, label }: { items: T[]; render: (item: T, index: number) => React.ReactNode; label: string }) {
+function Carousel<T>({ items, render, label }: { items: T[]; render: (item: T, index: number) => ReactNode; label: string }) {
   const [index, setIndex] = useState(0);
   const count = items.length;
   if (!count) return null;
@@ -129,111 +318,165 @@ function SocialIcon({ platform }: { platform?: string | null }) {
   return <span className="solo-social-fallback">{platform}</span>;
 }
 
+function videoEmbedUrl(url?: string | null) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, "");
+    if (host === "youtube.com" || host === "m.youtube.com" || host === "youtube-nocookie.com") {
+      const id = parsed.searchParams.get("v") ?? parsed.pathname.split("/").pop() ?? "";
+      return /^[\w-]+$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}` : null;
+    }
+    if (host === "youtu.be") {
+      const id = parsed.pathname.slice(1);
+      return /^[\w-]+$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}` : null;
+    }
+    if (host === "vimeo.com" || host === "player.vimeo.com") {
+      const id = parsed.pathname.split("/").filter(Boolean).pop() ?? "";
+      return /^\d+$/.test(id) ? `https://player.vimeo.com/video/${id}` : null;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function safeEmbedUrl(url?: string | null) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, "");
+    const allowed = [
+      "youtube.com", "youtube-nocookie.com", "youtu.be", "vimeo.com", "player.vimeo.com",
+      "docs.google.com", "calendar.google.com", "open.spotify.com", "soundcloud.com",
+    ];
+    return parsed.protocol === "https:" && allowed.includes(host) ? parsed.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function EditJumpBar({ items }: { items: JumpItem[] }) {
+  if (!useEditor()) return null;
+  return (
+    <nav className="solo-edit-jump" aria-label="Edit sections">
+      <strong>Edit sections</strong>
+      {items.map((item) => (
+        <a key={item.id} href={`#${item.id}`}>{item.label}</a>
+      ))}
+    </nav>
+  );
+}
+
 export function Blocks({ page, settings }: { page: { title?: string; sections?: Section[] }; settings?: Settings }) {
   const sections = page.sections ?? [];
   const [menuOpen, setMenuOpen] = useState(false);
+  const { edit } = useEditState();
+  const ids = sectionIdList(sections);
+  const jumpItems = sections.map((section, index) => ({ id: ids[index], label: sectionLabel(section, index) }));
 
   return (
-    <div className="solo-shell">
-      <header className="solo-header">
-        <div className="solo-header-inner">
-          <Link href="/" className="solo-logo" aria-label={settings?.name ?? "Home"} {...field(settings, "logo")}>
-            <Picture src={settings?.logo} alt={settings?.name ?? ""} className="solo-logo-img" />
-          </Link>
-          <nav className="solo-nav" aria-label="Main navigation">
-            {(settings?.nav ?? []).map((item, i) => (
-              <Link key={`${item.href}-${item.label}`} href={item.href} className="solo-nav-link" {...field(settings, `nav.${i}.label`)}>{item.label}</Link>
-            ))}
-          </nav>
-          <div className="solo-social">
-            {(settings?.social ?? []).map((item, i) => (
-              <a key={item.url} href={item.url} target="_blank" rel="noreferrer" aria-label={item.platform} {...field(settings, `social.${i}.url`)}>
-                <SocialIcon platform={item.platform} />
-              </a>
-            ))}
-          </div>
-          <button type="button" className="solo-menu-toggle" aria-label="Toggle menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
-            <span /><span /><span />
-          </button>
-        </div>
-        {menuOpen ? (
-          <nav className="solo-mobile-nav" aria-label="Mobile navigation">
-            {(settings?.nav ?? []).map((item, i) => (
-              <Link key={`m-${item.href}-${item.label}`} href={item.href} onClick={() => setMenuOpen(false)} {...field(settings, `nav.${i}.label`)}>{item.label}</Link>
-            ))}
-            <div className="solo-mobile-social">
+    <EditorContext.Provider value={edit}>
+      <div className="solo-shell">
+        <header className="solo-header">
+          <div className="solo-header-inner">
+            <Link href="/" className="solo-logo" aria-label={settings?.name ?? "Home"} {...field(settings, "logo")}>
+              <Picture src={settings?.logo} alt={settings?.name ?? ""} className="solo-logo-img" />
+            </Link>
+            <nav className="solo-nav" aria-label="Main navigation">
+              {(settings?.nav ?? []).map((item, i) => (
+                <Link key={`${item.href}-${item.label}`} href={item.href} className="solo-nav-link" {...field(settings, `nav.${i}.label`)}>{item.label}</Link>
+              ))}
+            </nav>
+            <div className="solo-social">
               {(settings?.social ?? []).map((item, i) => (
-                <a key={`m-${item.url}`} href={item.url} target="_blank" rel="noreferrer" aria-label={item.platform} {...field(settings, `social.${i}.url`)}>
+                <a key={item.url} href={item.url} target="_blank" rel="noreferrer" aria-label={item.platform} {...field(settings, `social.${i}.url`)}>
                   <SocialIcon platform={item.platform} />
                 </a>
               ))}
             </div>
-          </nav>
-        ) : null}
-      </header>
-
-      <main className="solo-main">
-        {sections.map((section, index) => (
-          <Section key={index} section={section} parent={page} index={index} />
-        ))}
-      </main>
-
-      <footer className="solo-footer">
-        <div className="solo-footer-inner">
-          <Link href="/" className="solo-footer-logo" {...field(settings, "logo")}>
-            <Picture src={settings?.logo} alt={settings?.name ?? ""} className="solo-logo-img" />
-          </Link>
-          <div className="solo-footer-body">
-            {settings?.footerLink ? (
-              <a href={settings.footerLink} target="_blank" rel="noreferrer" className="solo-footer-link" {...field(settings, "footerLinkLabel")}>
-                {settings.footerLinkLabel ?? settings.footerLink}
-              </a>
-            ) : null}
-            <p className="solo-copyright">© {new Date().getFullYear()} {settings?.name}</p>
+            <button type="button" className="solo-menu-toggle" aria-label="Toggle menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
+              <span /><span /><span />
+            </button>
           </div>
-        </div>
-      </footer>
-    </div>
+          {menuOpen ? (
+            <nav className="solo-mobile-nav" aria-label="Mobile navigation">
+              {(settings?.nav ?? []).map((item, i) => (
+                <Link key={`m-${item.href}-${item.label}`} href={item.href} onClick={() => setMenuOpen(false)} {...field(settings, `nav.${i}.label`)}>{item.label}</Link>
+              ))}
+              <div className="solo-mobile-social">
+                {(settings?.social ?? []).map((item, i) => (
+                  <a key={`m-${item.url}`} href={item.url} target="_blank" rel="noreferrer" aria-label={item.platform} {...field(settings, `social.${i}.url`)}>
+                    <SocialIcon platform={item.platform} />
+                  </a>
+                ))}
+              </div>
+            </nav>
+          ) : null}
+        </header>
+
+        <EditJumpBar items={jumpItems} />
+
+        <main className="solo-main">
+          {sections.map((section, index) => (
+            <Section key={index} section={section} parent={page} index={index} id={ids[index]} />
+          ))}
+        </main>
+
+        <footer className="solo-footer">
+          <div className="solo-footer-inner">
+            <Link href="/" className="solo-footer-logo" {...field(settings, "logo")}>
+              <Picture src={settings?.logo} alt={settings?.name ?? ""} className="solo-logo-img" />
+            </Link>
+            <div className="solo-footer-body">
+              {settings?.footerLink ? (
+                <a href={settings.footerLink} target="_blank" rel="noreferrer" className="solo-footer-link" {...field(settings, "footerLinkLabel")}>
+                  {settings.footerLinkLabel ?? settings.footerLink}
+                </a>
+              ) : null}
+              <p className="solo-copyright">© {new Date().getFullYear()} {settings?.name}</p>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </EditorContext.Provider>
   );
 }
 
-function Section({ section, parent, index }: { section: Section; parent: unknown; index: number }) {
+function Section({ section, parent, index, id }: { section: Section; parent: unknown; index: number; id: string }) {
   const f = (name: string) => field(parent, `sections.${index}.${name}`);
-  const kind = section.__typename?.replace(/^PageSections/, "") ?? section.type ?? "";
   const items = section.items ?? [];
+  const itemField = (i: number, name: string) => field(parent, `sections.${index}.items.${i}.${name}`);
+  const kind = sectionKind(section);
 
   switch (kind) {
     case "Intro":
       return (
-        <section id="introduction-1" className="solo-intro" style={{ backgroundImage: `linear-gradient(rgba(23,23,23,.75), rgba(23,23,23,.75)), url("${section.image ?? ""}")` }}>
+        <section id={id} className={`solo-intro${sectionTone(section.tone)}`} style={{ backgroundImage: `linear-gradient(rgba(23,23,23,.75), rgba(23,23,23,.75)), url("${section.image ?? ""}")` }}>
           <div className="solo-container solo-intro-inner">
-            <h1 {...f("headline")}>{section.headline}</h1>
-            <div className="solo-intro-copy" {...f("body")}><RichText text={section.body} /></div>
-            <div className="solo-intro-cta"><Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-light" fieldAttrs={f("ctaLabel")} /></div>
+            <Heading as="h1" text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} label="Edit main headline" />
+            <Copy text={section.body} fieldAttrs={f("body")} size={section.bodySize} className="solo-intro-copy" label="Edit intro text" />
+            <div className="solo-intro-cta">
+              <Cta label={section.ctaLabel} url={section.ctaUrl} className={buttonClass(section.buttonTone, "light")} fieldAttrs={f("ctaLabel")} />
+            </div>
+            <div {...f("image")}><EditBadge label="Edit background photo" /></div>
           </div>
         </section>
       );
 
     case "Services":
       return (
-        <section id="services-1" className="solo-panel solo-services">
+        <section id={id} className={`solo-panel solo-services${sectionTone(section.tone)}`}>
           <div className="solo-container">
-            <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2>
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" />
             <div className="solo-service-grid">
               {items.map((item, i) => (
-                <article key={i} className="solo-service-card">
-                  <div className="solo-service-image" {...field(parent, `sections.${index}.items.${i}.image`)}>
-                    <Picture src={item.image} alt={item.title ?? ""} />
-                  </div>
-                  <h3 {...field(parent, `sections.${index}.items.${i}.title`)}>{item.title}</h3>
-                  {item.kicker ? <h4 {...field(parent, `sections.${index}.items.${i}.kicker`)}>{item.kicker}</h4> : null}
-                  <div {...field(parent, `sections.${index}.items.${i}.body`)}><RichText text={item.body} /></div>
-                  <Cta
-                    label={item.ctaLabel}
-                    url={item.ctaUrl}
-                    className="solo-btn solo-btn-dark"
-                    fieldAttrs={field(parent, `sections.${index}.items.${i}.ctaLabel`)}
-                  />
+                <article key={i} className={`solo-service-card${panelTone(section.panelTone)}`}>
+                  <Photo src={item.image} alt={item.title ?? ""} fieldAttrs={itemField(i, "image")} className="solo-service-image" />
+                  <h3 {...itemField(i, "title")}>{item.title}<EditBadge label="Edit card title" /></h3>
+                  {item.kicker ? <h4 {...itemField(i, "kicker")}>{item.kicker}<EditBadge label="Edit small heading" /></h4> : null}
+                  <Copy text={item.body} fieldAttrs={itemField(i, "body")} size={section.bodySize} label="Edit card text" />
+                  <Cta label={item.ctaLabel} url={item.ctaUrl} className={buttonClass(section.buttonTone, "dark")} fieldAttrs={itemField(i, "ctaLabel")} />
                 </article>
               ))}
             </div>
@@ -243,18 +486,16 @@ function Section({ section, parent, index }: { section: Section; parent: unknown
 
     case "Gallery":
       return (
-        <section id="gallery-1" className="solo-panel solo-gallery">
+        <section id={id} className={`solo-panel solo-gallery${sectionTone(section.tone)}`}>
           <div className="solo-container">
-            <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2>
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" />
             <Carousel
               items={items}
               label="photo"
               render={(item, i) => (
                 <figure className="solo-gallery-item">
-                  <div {...field(parent, `sections.${index}.items.${i}.image`)}>
-                    <Picture src={item.image} alt={item.caption ?? ""} />
-                  </div>
-                  <figcaption {...field(parent, `sections.${index}.items.${i}.caption`)}>{item.caption}</figcaption>
+                  <Photo src={item.image} alt={item.caption ?? ""} fieldAttrs={itemField(i, "image")} className="solo-gallery-photo" />
+                  <figcaption {...itemField(i, "caption")}>{item.caption}<EditBadge label="Edit caption" /></figcaption>
                 </figure>
               )}
             />
@@ -264,42 +505,45 @@ function Section({ section, parent, index }: { section: Section; parent: unknown
 
     case "QuoteBanner":
       return (
-        <section id="quotebanner-1" className="solo-quote-banner">
+        <section id={id} className={`solo-quote-banner${sectionTone(section.tone)}`}>
           <div className="solo-container solo-banner-inner">
-            <h2 {...f("headline")}>{section.headline}</h2>
-            <div {...f("body")}><RichText text={section.body} /></div>
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} />
+            <Copy text={section.body} fieldAttrs={f("body")} size={section.bodySize} />
           </div>
         </section>
       );
 
     case "ImageBanner":
       return (
-        <section id="imagebanner-1" className="solo-image-banner" style={{ backgroundImage: `linear-gradient(rgba(255,255,255,.2), rgba(255,255,255,.2)), url("${section.image ?? ""}")` }} {...f("image")} aria-hidden="true" />
+        <section id={id} className={`solo-image-banner${sectionTone(section.tone)}`} style={{ backgroundImage: `linear-gradient(rgba(255,255,255,.2), rgba(255,255,255,.2)), url("${section.image ?? ""}")` }} {...f("image")}>
+          <EditBadge label="Edit wide photo" />
+        </section>
       );
 
     case "Scheduling":
       return (
-        <section id="scheduling-1" className="solo-scheduling">
+        <section id={id} className={`solo-scheduling${sectionTone(section.tone)}`}>
           <div className="solo-container solo-banner-inner">
-            <h2 {...f("headline")}>{section.headline}</h2>
-            <div {...f("body")}><RichText text={section.body} /></div>
-            <Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-dark" fieldAttrs={f("ctaLabel")} />
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} />
+            <Copy text={section.body} fieldAttrs={f("body")} size={section.bodySize} />
+            <Cta label={section.ctaLabel} url={section.ctaUrl} className={buttonClass(section.buttonTone, "dark")} fieldAttrs={f("ctaLabel")} />
           </div>
         </section>
       );
 
     case "Reviews":
       return (
-        <section id="customerreviews-1" className="solo-panel solo-reviews">
+        <section id={id} className={`solo-panel solo-reviews${sectionTone(section.tone)}`}>
           <div className="solo-container">
-            <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2>
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" />
             <Carousel
               items={items}
               label="review"
               render={(item, i) => (
-                <blockquote className="solo-review" {...field(parent, `sections.${index}.items.${i}.body`)}>
+                <blockquote className={`solo-review${panelTone(section.panelTone)}`} {...itemField(i, "body")}>
                   <RichText text={item.body} />
-                  <cite {...field(parent, `sections.${index}.items.${i}.author`)}>{item.author}</cite>
+                  <cite {...itemField(i, "author")}>{item.author}<EditBadge label="Edit reviewer" /></cite>
+                  <EditBadge label="Edit review text" />
                 </blockquote>
               )}
             />
@@ -309,53 +553,202 @@ function Section({ section, parent, index }: { section: Section; parent: unknown
 
     case "Faq":
       return (
-        <section id="frequentlyaskedquestions-1" className="solo-faq">
+        <section id={id} className={`solo-faq${sectionTone(section.tone)}`}>
           <div className="solo-container solo-faq-inner">
-            <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2>
-            <FaqList items={items} parent={parent} sectionIndex={index} />
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" />
+            <FaqList items={items} parent={parent} sectionIndex={index} bodySize={section.bodySize} />
           </div>
         </section>
       );
 
     case "Contact":
       return (
-        <section id="contact-1" className="solo-contact">
+        <section id={id} className={`solo-contact${sectionTone(section.tone)}`}>
           <div className="solo-container solo-contact-inner">
-            <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2>
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" />
             <a href={`mailto:${section.email ?? "teachertravelingworld@gmail.com"}`} className="solo-contact-email" {...f("email")}>
-              {section.email ?? "teachertravelingworld@gmail.com"}
+              {section.email ?? "teachertravelingworld@gmail.com"}<EditBadge label="Edit email" />
             </a>
-            <ContactForm email={section.email ?? "teachertravelingworld@gmail.com"} />
+            <ContactForm email={section.email ?? "teachertravelingworld@gmail.com"} buttonClass={buttonClass(section.buttonTone, "dark")} />
           </div>
         </section>
       );
 
+    case "Article":
+      return (
+        <section id={id} className={`solo-panel solo-article${sectionTone(section.tone)}`}>
+          <div className="solo-container solo-article-inner">
+            {section.image ? <Photo src={section.image} alt={section.imageAlt ?? ""} fieldAttrs={f("image")} className="solo-article-photo" /> : null}
+            <div className="solo-article-copy">
+              {section.kicker || section.date ? (
+                <p className="solo-eyebrow" {...f(section.kicker ? "kicker" : "date")}>
+                  {section.kicker ?? section.date}<EditBadge label="Edit label" />
+                </p>
+              ) : null}
+              <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" />
+              <Copy text={section.body} fieldAttrs={f("body")} size={section.bodySize} />
+              <Cta label={section.ctaLabel} url={section.ctaUrl} className={buttonClass(section.buttonTone, "dark")} fieldAttrs={f("ctaLabel")} />
+            </div>
+          </div>
+        </section>
+      );
+
+    case "TextBanner":
+      return (
+        <section id={id} className={`solo-text-banner${sectionTone(section.tone ?? "yellow")}`}>
+          <div className="solo-container solo-banner-inner">
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} />
+            <Copy text={section.body} fieldAttrs={f("body")} size={section.bodySize} />
+            <Cta label={section.ctaLabel} url={section.ctaUrl} className={buttonClass(section.buttonTone, "dark")} fieldAttrs={f("ctaLabel")} />
+          </div>
+        </section>
+      );
+
+    case "LogoGrid":
+      return (
+        <section id={id} className={`solo-panel solo-logo-grid${sectionTone(section.tone)}`}>
+          <div className="solo-container">
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" />
+            <div className="solo-logo-grid-list">
+              {items.map((item, i) => {
+                const logo = (
+                  <Photo src={item.image} alt={item.title ?? ""} fieldAttrs={itemField(i, "image")} className="solo-logo-tile" />
+                );
+                return item.url ? (
+                  <a key={i} href={item.url} target="_blank" rel="noreferrer" {...itemField(i, "url")}>
+                    {logo}<span className="solo-logo-name">{item.title}<EditBadge label="Edit name" /></span>
+                  </a>
+                ) : (
+                  <div key={i}>
+                    {logo}<span className="solo-logo-name" {...itemField(i, "title")}>{item.title}<EditBadge label="Edit name" /></span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      );
+
+    case "Newsletter":
+      return (
+        <section id={id} className={`solo-newsletter${sectionTone(section.tone ?? "panel")}`}>
+          <div className="solo-container solo-newsletter-inner">
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" />
+            <Copy text={section.body} fieldAttrs={f("body")} size={section.bodySize} />
+            <NewsletterForm
+              email={section.email ?? "teachertravelingworld@gmail.com"}
+              label={section.ctaLabel ?? "Subscribe"}
+              buttonClass={buttonClass(section.buttonTone, "dark")}
+            />
+            <p className="solo-newsletter-email" {...f("email")}>
+              Sent to {section.email ?? "teachertravelingworld@gmail.com"}<EditBadge label="Edit destination email" />
+            </p>
+          </div>
+        </section>
+      );
+
+    case "Team":
+      return (
+        <section id={id} className={`solo-panel solo-team${sectionTone(section.tone)}`}>
+          <div className="solo-container">
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" />
+            <div className="solo-team-grid">
+              {items.map((item, i) => (
+                <article key={i} className={`solo-team-card${panelTone(section.panelTone)}`}>
+                  <Photo src={item.image} alt={item.title ?? ""} fieldAttrs={itemField(i, "image")} className="solo-team-photo" />
+                  <h3 {...itemField(i, "title")}>{item.title}<EditBadge label="Edit name" /></h3>
+                  {item.kicker ? <p className="solo-team-role" {...itemField(i, "kicker")}>{item.kicker}<EditBadge label="Edit role" /></p> : null}
+                  <Copy text={item.body} fieldAttrs={itemField(i, "body")} size={section.bodySize} label="Edit bio" />
+                  {item.url ? <a href={item.url} target="_blank" rel="noreferrer" {...itemField(i, "url")}>Profile<EditBadge label="Edit profile link" /></a> : null}
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+
+    case "Video":
+      return (
+        <section id={id} className={`solo-panel solo-video${sectionTone(section.tone)}`}>
+          <div className="solo-container">
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" />
+            <div className="solo-video-frame" {...f("videoUrl")}>
+              {videoEmbedUrl(section.videoUrl) ? (
+                <iframe
+                  src={videoEmbedUrl(section.videoUrl) ?? undefined}
+                  title={section.embedTitle ?? section.headline ?? "Video"}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : null}
+              <EditBadge label="Edit video link" />
+            </div>
+            {section.caption ? <p className="solo-video-caption" {...f("caption")}>{section.caption}<EditBadge label="Edit caption" /></p> : null}
+            <Copy text={section.body} fieldAttrs={f("body")} size={section.bodySize} />
+          </div>
+        </section>
+      );
+
+    case "CodeEmbed": {
+      const embed = safeEmbedUrl(section.embedUrl);
+      return (
+        <section id={id} className={`solo-panel solo-embed${sectionTone(section.tone)}`}>
+          <div className="solo-container">
+            <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" />
+            <div className="solo-embed-frame" {...f("embedUrl")}>
+              {embed ? (
+                <iframe
+                  src={embed}
+                  title={section.embedTitle ?? section.headline ?? "Embedded content"}
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  loading="lazy"
+                />
+              ) : null}
+              <EditBadge label="Edit embed link" />
+            </div>
+            {section.caption ? <p className="solo-video-caption" {...f("caption")}>{section.caption}<EditBadge label="Edit caption" /></p> : null}
+          </div>
+        </section>
+      );
+    }
+
     default:
       return (
-        <section className="solo-panel solo-generic">
+        <section id={id} className={`solo-panel solo-generic${sectionTone(section.tone)}`}>
           <div className="solo-container">
-            {section.headline ? <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2> : null}
-            {section.body ? <div {...f("body")}><RichText text={section.body} /></div> : null}
-            {section.image ? <div {...f("image")}><Picture src={section.image} alt={section.imageAlt ?? ""} className="solo-generic-image" /></div> : null}
-            <Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-dark" fieldAttrs={f("ctaLabel")} />
+            {section.headline ? <Heading text={section.headline} fieldAttrs={f("headline")} size={section.headlineSize} className="solo-heading" /> : null}
+            {section.body ? <Copy text={section.body} fieldAttrs={f("body")} size={section.bodySize} /> : null}
+            {section.image ? <Photo src={section.image} alt={section.imageAlt ?? ""} fieldAttrs={f("image")} className="solo-generic-photo" /> : null}
+            <Cta label={section.ctaLabel} url={section.ctaUrl} className={buttonClass(section.buttonTone, "dark")} fieldAttrs={f("ctaLabel")} />
           </div>
         </section>
       );
   }
 }
 
-function FaqList({ items, parent, sectionIndex }: { items: FaqItem[]; parent: unknown; sectionIndex: number }) {
+function FaqList({
+  items,
+  parent,
+  sectionIndex,
+  bodySize,
+}: {
+  items: FaqItem[];
+  parent: unknown;
+  sectionIndex: number;
+  bodySize?: string | null;
+}) {
   const [open, setOpen] = useState<number | null>(null);
   return (
     <div className="solo-faq-list">
       {items.map((item, i) => (
         <div key={i} className={`solo-faq-item ${open === i ? "expanded" : ""}`}>
           <button type="button" className="solo-faq-heading" onClick={() => setOpen(open === i ? null : i)} aria-expanded={open === i}>
-            <span {...field(parent, `sections.${sectionIndex}.items.${i}.title`)}>{item.title}</span>
+            <span {...field(parent, `sections.${sectionIndex}.items.${i}.title`)}>{item.title}<EditBadge label="Edit question" /></span>
             <span className="solo-chevron" aria-hidden="true">⌄</span>
           </button>
-          <div className="solo-faq-body" {...field(parent, `sections.${sectionIndex}.items.${i}.text`)}>
-            <RichText text={item.text} />
+          <div className={`solo-faq-body ${sizeClass("body", bodySize)}`} {...field(parent, `sections.${sectionIndex}.items.${i}.text`)}>
+            <RichText text={item.text} /><EditBadge label="Edit answer" />
           </div>
         </div>
       ))}
@@ -363,7 +756,7 @@ function FaqList({ items, parent, sectionIndex }: { items: FaqItem[]; parent: un
   );
 }
 
-function ContactForm({ email }: { email: string }) {
+function ContactForm({ email, buttonClass: className }: { email: string; buttonClass: string }) {
   const fields = [
     { name: "email", label: "Email address *", type: "email", required: true },
     { name: "name", label: "Name *", type: "text", required: true },
@@ -371,7 +764,7 @@ function ContactForm({ email }: { email: string }) {
     { name: "message", label: "Message *", type: "textarea", required: true },
   ];
 
-  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
     if (FORM_ENDPOINT) return;
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -397,7 +790,27 @@ function ContactForm({ email }: { email: string }) {
         </label>
       ))}
       <input type="text" name="_gotcha" className="solo-honey" tabIndex={-1} autoComplete="off" />
-      <button type="submit" className="solo-btn solo-btn-dark">Contact Us</button>
+      <button type="submit" className={className}>Contact Us</button>
+    </form>
+  );
+}
+
+function NewsletterForm({ email, label, buttonClass: className }: { email: string; label: string; buttonClass: string }) {
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    if (FORM_ENDPOINT) return;
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const subscriber = String(data.get("email") ?? "");
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent("Teacher Traveling newsletter")}&body=${encodeURIComponent(`Please add ${subscriber} to the newsletter list.`)}`;
+  }
+
+  return (
+    <form action={FORM_ENDPOINT || undefined} method={FORM_ENDPOINT ? "post" : undefined} onSubmit={onSubmit} className="solo-newsletter-form">
+      <label className="solo-field">
+        <span>Email address *</span>
+        <input type="email" name="email" required />
+      </label>
+      <button type="submit" className={className}>{label}</button>
     </form>
   );
 }
