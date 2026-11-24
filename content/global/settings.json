@@ -1,7 +1,49 @@
 {
   "name": "Teacher Traveling",
+  "logo": "/uploads/0123530d-fc16-4cbc-be66-6f1287017394.png",
   "tagline": "Join Cynthia Nieves, a dedicated ESL and bilingual educator with over 24 years of experience, as she not only shares her expertise in creating unforgettable travel experiences but also leads student groups on educational tours around the world. Teachers can discover the secrets to organizing successful, enriching trips that immerse students in diverse cultures and foster life-changing learning experiences.Together, let's embark on a journey and transform lives through the power of travel!",
-  "locale": "en",
+  "nav": [
+    {
+      "label": "TRAVEL PROGRAMS",
+      "href": "/#services-1"
+    },
+    {
+      "label": "GALLERY",
+      "href": "/#gallery-1"
+    },
+    {
+      "label": "TRAVEL & EDUCATIONAL STORIES",
+      "href": "/#scheduling-1"
+    },
+    {
+      "label": "TRAVELER REVIEWS",
+      "href": "/#customerreviews-1"
+    },
+    {
+      "label": "FAQ",
+      "href": "/#frequentlyaskedquestions-1"
+    },
+    {
+      "label": "Contact Us",
+      "href": "/#contact-1"
+    }
+  ],
+  "social": [
+    {
+      "platform": "Instagram",
+      "url": "https://www.instagram.com/_teachertraveling_/?hl=en"
+    },
+    {
+      "platform": "Facebook",
+      "url": "https://www.facebook.com/profile.php?id=100083014555150"
+    },
+    {
+      "platform": "TikTok",
+      "url": "https://www.tiktok.com/@_teachertraveling_"
+    }
+  ],
+  "footerLink": "https://www.teacherspayteachers.com/store/teachertraveling",
+  "footerLinkLabel": "Teacher traveling digital tools",
   "theme": {
     "background": "#ffffff",
     "foreground": "#101010",
@@ -9,61 +51,8 @@
     "displayFont": "Gloock",
     "bodyFont": "Libre Franklin"
   },
-  "nav": [
-    {
-      "label": "TRAVEL PROGRAMS",
-      "href": "/index#services-1"
-    },
-    {
-      "label": "GALLERY",
-      "href": "/index#gallery-1"
-    },
-    {
-      "label": "TRAVELER REVIEWS",
-      "href": "/index#customerreviews-1"
-    },
-    {
-      "label": "FAQ",
-      "href": "/index#frequentlyaskedquestions-1"
-    },
-    {
-      "label": "Contact Us",
-      "href": "/index#contact-1"
-    },
-    {
-      "label": "TRAVEL PROGRAMS",
-      "href": "/index#services-1"
-    },
-    {
-      "label": "GALLERY",
-      "href": "/index#gallery-1"
-    },
-    {
-      "label": "TRAVELER REVIEWS",
-      "href": "/index#customerreviews-1"
-    }
-  ],
-  "social": [
-    {
-      "platform": "Instagram",
-      "url": "https://www.instagram.com/_teachertraveling_/?hl=en "
-    },
-    {
-      "platform": "Facebook",
-      "url": "https://www.facebook.com/profile.php?id=100083014555150 "
-    },
-    {
-      "platform": "TikTok",
-      "url": "https://www.tiktok.com/@_teachertraveling_"
-    }
-  ],
   "seo": {
     "title": "Let the World Be Your Guide to Learning! - Teacher Traveling",
     "description": "Join Cynthia Nieves, a dedicated ESL and bilingual educator with over 24 years of experience, as she not only shares her expertise in creating unforgettable travel experiences but also leads student groups on educational tours around the world. Teachers can discover the secrets to organizing successful, enriching trips that immerse students in diverse cultures and foster life-changing learning experiences.Together, let's embark on a journey and transform lives through the power of travel!"
-  },
-  "convertedFrom": {
-    "source": "soloist.ai",
-    "handle": "",
-    "mediaCount": 19
   }
 }

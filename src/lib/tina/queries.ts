@@ -7,27 +7,72 @@ export const pageWithSettingsQuery = /* GraphQL */ `
       description
       sections {
         __typename
-        ... on PageSectionsImage { image imageAlt }
-        ... on PageSectionsProse { headline body ctaLabel ctaUrl }
-        ... on PageSectionsGallery {
+        ... on PageSectionsIntro {
           headline
           body
-          items { image meta }
           image
-          imageAlt
           ctaLabel
           ctaUrl
         }
-        ... on PageSectionsCta { headline ctaLabel ctaUrl }
-        ... on PageSectionsTopics { headline body items { text } }
-        ... on PageSectionsFaq { headline items { title text } }
+        ... on PageSectionsServices {
+          headline
+          items {
+            title
+            kicker
+            body
+            image
+            ctaLabel
+            ctaUrl
+          }
+        }
+        ... on PageSectionsGallery {
+          headline
+          items {
+            image
+            caption
+          }
+        }
+        ... on PageSectionsQuoteBanner {
+          headline
+          body
+        }
+        ... on PageSectionsImageBanner {
+          image
+        }
+        ... on PageSectionsScheduling {
+          headline
+          body
+          ctaLabel
+          ctaUrl
+        }
+        ... on PageSectionsReviews {
+          headline
+          items {
+            body
+            author
+          }
+        }
+        ... on PageSectionsFaq {
+          headline
+          items {
+            title
+            text
+          }
+        }
+        ... on PageSectionsContact {
+          headline
+          email
+        }
       }
     }
     settings(relativePath: $settingsRelativePath) {
       name
+      logo
       tagline
       nav { label href }
       social { platform url }
+      footerLink
+      footerLinkLabel
       theme { background foreground accent displayFont bodyFont }
       seo { title description }
     }

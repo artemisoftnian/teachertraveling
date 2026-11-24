@@ -3,29 +3,55 @@
 // renderer, so a new Tina template never crashes the site.
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { tinaField } from "tinacms/dist/react";
 import { TinaMarkdown, type TinaMarkdownContent } from "tinacms/dist/rich-text";
 
 type RichTextValue = string | TinaMarkdownContent | null;
-type Item = { title?: string | null; text?: RichTextValue; meta?: RichTextValue; url?: string | null; image?: string | null };
-export type Section = {
+
+type ServiceItem = {
+  title?: string | null;
+  kicker?: string | null;
+  body?: RichTextValue;
+  image?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+};
+type GalleryItem = { image?: string | null; caption?: string | null };
+type ReviewItem = { body?: RichTextValue; author?: string | null };
+type FaqItem = { title?: string | null; text?: RichTextValue };
+type Item = ServiceItem & GalleryItem & ReviewItem & FaqItem;
+
+type Section = {
   __typename?: string;
   type?: string;
   headline?: string | null;
-  eyebrow?: string | null;
   body?: RichTextValue;
   image?: string | null;
   imageAlt?: string | null;
   ctaLabel?: string | null;
   ctaUrl?: string | null;
+  email?: string | null;
   items?: Item[] | null;
 };
 
+type Settings = {
+  name?: string | null;
+  logo?: string | null;
+  nav?: { label: string; href: string }[] | null;
+  social?: { platform: string; url: string }[] | null;
+  footerLink?: string | null;
+  footerLinkLabel?: string | null;
+};
+
 const FORM_ENDPOINT = process.env.NEXT_PUBLIC_FORM_ENDPOINT;
+const CONTACT_LINK = "/#contact-1";
 
 function Picture({ src, alt = "", className }: { src?: string | null; alt?: string; className?: string }) {
   if (!src) return null;
-  if (src.startsWith("/")) return <Image src={src} alt={alt} width={1600} height={1000} className={className} unoptimized />;
+  if (src.startsWith("/")) {
+    return <Image src={src} alt={alt} width={1600} height={1000} className={className} unoptimized />;
+  }
   return <img src={src} alt={alt} className={className} loading="lazy" />;
 }
 
@@ -56,168 +82,314 @@ function plainText(value?: RichTextValue): string | undefined {
   return nodeText(value);
 }
 
-export function Blocks({ page, settings }: { page: { title?: string; sections?: Section[] }; settings?: { name?: string; nav?: { label: string; href: string }[]; social?: { platform: string; url: string }[] } }) {
-  const sections = page.sections ?? [];
+function field(parent: unknown, path: string) {
+  return { "data-tina-field": tinaField(parent as never, path) };
+}
+
+function external(url?: string | null) {
+  return !!url && /^https?:\/\//.test(url);
+}
+
+function Cta({ label, url, className = "solo-btn" }: { label?: string | null; url?: string | null; className?: string }) {
+  if (!label) return null;
+  const href = url || CONTACT_LINK;
+  const props = external(href) ? { target: "_blank", rel: "noreferrer" } : {};
+  return <a href={href} className={className} {...props}>{label}</a>;
+}
+
+function Carousel<T>({ items, render, label }: { items: T[]; render: (item: T, index: number) => React.ReactNode; label: string }) {
+  const [index, setIndex] = useState(0);
+  const count = items.length;
+  if (!count) return null;
+  const current = ((index % count) + count) % count;
   return (
-    <div className="min-h-screen">
-      <header className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-6">
-        <Link href="/" className="font-display text-lg font-semibold">{settings?.name}</Link>
-        <nav className="flex flex-wrap gap-5 text-sm">
-          {(settings?.nav ?? []).map((n) => (
-            <Link key={n.href} href={n.href} className="hover:opacity-60">{n.label}</Link>
-          ))}
-        </nav>
-      </header>
-      <main>{sections.map((s, i) => <Section key={i} s={s} parent={page} index={i} />)}</main>
-      <footer className="mx-auto max-w-5xl border-t px-6 py-10 text-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <span>© {new Date().getFullYear()} {settings?.name}</span>
-          <span className="flex gap-4">
-            {(settings?.social ?? []).map((s) => (
-              <a key={s.url} href={s.url} target="_blank" rel="noreferrer" className="hover:opacity-60">{s.platform}</a>
+    <div className="solo-carousel">
+      <div className="solo-carousel-stage">{render(items[current], current)}</div>
+      <div className="solo-carousel-controls">
+        <button type="button" aria-label={`Previous ${label}`} onClick={() => setIndex((index - 1 + count) % count)}>‹</button>
+        <span className="solo-page-indicator">{current + 1} / {count}</span>
+        <button type="button" aria-label={`Next ${label}`} onClick={() => setIndex((index + 1) % count)}>›</button>
+      </div>
+    </div>
+  );
+}
+
+function SocialIcon({ platform }: { platform?: string | null }) {
+  const name = (platform ?? "").toLowerCase();
+  if (name === "instagram") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>;
+  }
+  if (name === "facebook") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 8.5V6.7c0-.8.5-1 1-1h2.2V2.8h-3c-2.6 0-3.7 1.7-3.7 3.9v1.8H9v3.3h2V21h3.5v-9.2h2.7l.5-3.3h-3.2Z" fill="currentColor" stroke="none" /></svg>;
+  }
+  if (name === "tiktok") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.2 2h2.6c.2 1.8 1.3 3.1 3.2 3.3v2.7c-1.2 0-2.3-.4-3.2-1v5.9c0 4-3.2 6.7-6.6 6.1-2.8-.5-4.7-3-4.6-5.8.1-3.2 3-5.6 6.2-5.3v2.8c-1.9-.4-3.6.8-3.7 2.6-.1 1.7 1.2 3.2 2.9 3.3 1.9.1 3.3-1.4 3.3-3.2V2Z" fill="currentColor" stroke="none" /></svg>;
+  }
+  return <span className="solo-social-fallback">{platform}</span>;
+}
+
+export function Blocks({ page, settings }: { page: { title?: string; sections?: Section[] }; settings?: Settings }) {
+  const sections = page.sections ?? [];
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <div className="solo-shell">
+      <header className="solo-header">
+        <div className="solo-header-inner">
+          <Link href="/" className="solo-logo" aria-label={settings?.name ?? "Home"}>
+            <Picture src={settings?.logo} alt={settings?.name ?? ""} className="solo-logo-img" />
+          </Link>
+          <nav className="solo-nav" aria-label="Main navigation" {...field(settings, "nav")}>
+            {(settings?.nav ?? []).map((item) => (
+              <Link key={`${item.href}-${item.label}`} href={item.href} className="solo-nav-link">{item.label}</Link>
             ))}
-          </span>
+          </nav>
+          <div className="solo-social" {...field(settings, "social")}>
+            {(settings?.social ?? []).map((item) => (
+              <a key={item.url} href={item.url} target="_blank" rel="noreferrer" aria-label={item.platform}>
+                <SocialIcon platform={item.platform} />
+              </a>
+            ))}
+          </div>
+          <button type="button" className="solo-menu-toggle" aria-label="Toggle menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
+            <span /><span /><span />
+          </button>
+        </div>
+        {menuOpen ? (
+          <nav className="solo-mobile-nav" aria-label="Mobile navigation">
+            {(settings?.nav ?? []).map((item) => (
+              <Link key={`m-${item.href}-${item.label}`} href={item.href} onClick={() => setMenuOpen(false)}>{item.label}</Link>
+            ))}
+            <div className="solo-mobile-social">
+              {(settings?.social ?? []).map((item) => (
+                <a key={`m-${item.url}`} href={item.url} target="_blank" rel="noreferrer" aria-label={item.platform}>
+                  <SocialIcon platform={item.platform} />
+                </a>
+              ))}
+            </div>
+          </nav>
+        ) : null}
+      </header>
+
+      <main className="solo-main">
+        {sections.map((section, index) => (
+          <Section key={index} section={section} parent={page} index={index} />
+        ))}
+      </main>
+
+      <footer className="solo-footer">
+        <div className="solo-footer-inner">
+          <Link href="/" className="solo-footer-logo">
+            <Picture src={settings?.logo} alt={settings?.name ?? ""} className="solo-logo-img" />
+          </Link>
+          <div className="solo-footer-body">
+            {settings?.footerLink ? (
+              <a href={settings.footerLink} target="_blank" rel="noreferrer" className="solo-footer-link" {...field(settings, "footerLink")}>
+                {settings.footerLinkLabel ?? settings.footerLink}
+              </a>
+            ) : null}
+            <p className="solo-copyright">© {new Date().getFullYear()} {settings?.name}</p>
+          </div>
         </div>
       </footer>
     </div>
   );
 }
 
-function Section({ s, parent, index }: { s: Section; parent: unknown; index: number }) {
-  const wrap = "mx-auto max-w-5xl px-6 py-14";
-  const field = (name: string) => ({ "data-tina-field": tinaField(parent as never, `sections.${index}.${name}`) });
-  const kind = s.type ?? s.__typename?.replace(/^PageSections/, "").toLowerCase() ?? "";
+function Section({ section, parent, index }: { section: Section; parent: unknown; index: number }) {
+  const f = (name: string) => field(parent, `sections.${index}.${name}`);
+  const kind = section.__typename?.replace(/^PageSections/, "") ?? section.type ?? "";
+  const items = section.items ?? [];
+
   switch (kind) {
-    case "hero":
+    case "Intro":
       return (
-        <section className={`${wrap} grid items-center gap-10 md:grid-cols-2`}>
-          <div>
-            {s.eyebrow ? <p className="mb-3 text-sm uppercase tracking-wide text-accent" {...field("eyebrow")}>{s.eyebrow}</p> : null}
-            <h1 className="font-display text-4xl leading-[1.1] md:text-5xl" {...field("headline")}>{s.headline}</h1>
-            <div className="mt-5 max-w-prose opacity-90" {...field("body")}><RichText text={s.body} /></div>
-            {s.ctaLabel ? <Link href={s.ctaUrl ?? "#contact"} className="mt-6 inline-block rounded-full bg-accent px-5 py-3 text-sm font-medium" style={{ color: "var(--accent-ink, #fff)" }}>{s.ctaLabel}</Link> : null}
-          </div>
-          <Picture src={s.image} alt={s.imageAlt ?? ""} className="w-full rounded-2xl" />
-        </section>
-      );
-    case "contact":
-      return (
-        <section id="contact" className={wrap}>
-          <h2 className="font-display text-3xl" {...field("headline")}>{s.headline ?? "Get in touch"}</h2>
-          <div className="mt-4 max-w-prose opacity-90" {...field("body")}><RichText text={s.body} /></div>
-          <ContactForm fields={(s.items ?? []) as Item[]} submit={s.ctaLabel ?? "Send"} />
-        </section>
-      );
-    case "cta":
-      return (
-        <section className={`${wrap}`}>
-          <div className="rounded-2xl bg-ink/5 p-10 text-center">
-            <h2 className="font-display text-3xl" {...field("headline")}>{s.headline}</h2>
-            <div className="mx-auto mt-3 max-w-prose opacity-90" {...field("body")}><RichText text={s.body} /></div>
-            {s.ctaLabel ? <Link href={s.ctaUrl ?? "#contact"} className="mt-6 inline-block rounded-full bg-accent px-5 py-3 text-sm font-medium">{s.ctaLabel}</Link> : null}
+        <section id="introduction-1" className="solo-intro" style={{ backgroundImage: `linear-gradient(rgba(23,23,23,.75), rgba(23,23,23,.75)), url("${section.image ?? ""}")` }}>
+          <div className="solo-container solo-intro-inner">
+            <h1 {...f("headline")}>{section.headline}</h1>
+            <div className="solo-intro-copy" {...f("body")}><RichText text={section.body} /></div>
+            <div className="solo-intro-cta" {...f("ctaUrl")}><Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-light" /></div>
           </div>
         </section>
       );
-    case "gallery":
+
+    case "Services":
       return (
-        <section className={wrap}>
-          {s.headline ? <h2 className="font-display text-3xl" {...field("headline")}>{s.headline}</h2> : null}
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(s.items ?? []).map((it, i) => (
-              <figure key={i} className="overflow-hidden rounded-xl bg-ink/5">
-                <Picture src={it.image} alt={plainText(it.meta) ?? it.title ?? ""} className="w-full" />
-                {it.title ? <figcaption className="px-4 py-3 text-sm">{it.title}</figcaption> : null}
-              </figure>
-            ))}
+        <section id="services-1" className="solo-panel solo-services">
+          <div className="solo-container">
+            <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2>
+            <div className="solo-service-grid">
+              {items.map((item, i) => (
+                <article key={i} className="solo-service-card" {...field(parent, `sections.${index}.items.${i}.body`)}>
+                  <div className="solo-service-image">
+                    <Picture src={item.image} alt={item.title ?? ""} />
+                  </div>
+                  <h3>{item.title}</h3>
+                  {item.kicker ? <h4>{item.kicker}</h4> : null}
+                  <RichText text={item.body} />
+                  {item.ctaLabel ? <Cta label={item.ctaLabel} url={item.ctaUrl} className="solo-btn solo-btn-dark" /> : null}
+                </article>
+              ))}
+            </div>
           </div>
         </section>
       );
-    case "testimonials":
-    case "quote":
+
+    case "Gallery":
       return (
-        <section className={wrap}>
-          {s.headline ? <h2 className="font-display text-3xl" {...field("headline")}>{s.headline}</h2> : null}
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
-            {(s.items ?? []).map((it, i) => (
-              <blockquote key={i} className="border-l-2 border-accent pl-4">
-                <div className="font-display text-lg leading-relaxed">“<RichText text={it.text ?? it.title} />”</div>
-                {it.meta ? <cite className="mt-2 block text-sm not-italic opacity-70">{plainText(it.meta)}</cite> : null}
-              </blockquote>
-            ))}
+        <section id="gallery-1" className="solo-panel solo-gallery">
+          <div className="solo-container">
+            <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2>
+            <Carousel
+              items={items}
+              label="photo"
+              render={(item, i) => (
+                <figure className="solo-gallery-item">
+                  <Picture src={item.image} alt={item.caption ?? ""} />
+                  <figcaption {...field(parent, `sections.${index}.items.${i}.caption`)}>{item.caption}</figcaption>
+                </figure>
+              )}
+            />
           </div>
         </section>
       );
-    case "faq":
+
+    case "QuoteBanner":
       return (
-        <section className={wrap}>
-          {s.headline ? <h2 className="font-display text-3xl" {...field("headline")}>{s.headline}</h2> : null}
-          <div className="mt-6 divide-y">
-            {(s.items ?? []).map((it, i) => (
-              <details key={i} className="py-4">
-                <summary className="cursor-pointer font-medium">{it.title}</summary>
-                <div className="mt-2 opacity-90"><RichText text={it.text} /></div>
-              </details>
-            ))}
+        <section id="quotebanner-1" className="solo-quote-banner">
+          <div className="solo-container solo-banner-inner">
+            <h2 {...f("headline")}>{section.headline}</h2>
+            <div {...f("body")}><RichText text={section.body} /></div>
           </div>
         </section>
       );
-    case "stats":
+
+    case "ImageBanner":
       return (
-        <section className={wrap}>
-          <div className="grid gap-6 text-center sm:grid-cols-3">
-            {(s.items ?? []).map((it, i) => (
-              <div key={i}>
-                <div className="font-display text-3xl text-accent">{it.title}</div>
-                <div className="mt-1 text-sm opacity-80"><RichText text={it.text} /></div>
-              </div>
-            ))}
+        <section id="imagebanner-1" className="solo-image-banner" style={{ backgroundImage: `linear-gradient(rgba(255,255,255,.2), rgba(255,255,255,.2)), url("${section.image ?? ""}")` }} aria-hidden="true" />
+      );
+
+    case "Scheduling":
+      return (
+        <section id="scheduling-1" className="solo-scheduling">
+          <div className="solo-container solo-banner-inner">
+            <h2 {...f("headline")}>{section.headline}</h2>
+            <div {...f("body")}><RichText text={section.body} /></div>
+            <Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-dark" />
           </div>
         </section>
       );
+
+    case "Reviews":
+      return (
+        <section id="customerreviews-1" className="solo-panel solo-reviews">
+          <div className="solo-container">
+            <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2>
+            <Carousel
+              items={items}
+              label="review"
+              render={(item, i) => (
+                <blockquote className="solo-review" {...field(parent, `sections.${index}.items.${i}.body`)}>
+                  <RichText text={item.body} />
+                  <cite {...field(parent, `sections.${index}.items.${i}.author`)}>{item.author}</cite>
+                </blockquote>
+              )}
+            />
+          </div>
+        </section>
+      );
+
+    case "Faq":
+      return (
+        <section id="frequentlyaskedquestions-1" className="solo-faq">
+          <div className="solo-container solo-faq-inner">
+            <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2>
+            <FaqList items={items} parent={parent} sectionIndex={index} />
+          </div>
+        </section>
+      );
+
+    case "Contact":
+      return (
+        <section id="contact-1" className="solo-contact">
+          <div className="solo-container solo-contact-inner">
+            <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2>
+            <a href={`mailto:${section.email ?? "teachertravelingworld@gmail.com"}`} className="solo-contact-email" {...f("email")}>
+              {section.email ?? "teachertravelingworld@gmail.com"}
+            </a>
+            <ContactForm email={section.email ?? "teachertravelingworld@gmail.com"} />
+          </div>
+        </section>
+      );
+
     default:
       return (
-        <section className={wrap}>
-          {s.headline ? <h2 className="font-display text-3xl" {...field("headline")}>{s.headline}</h2> : null}
-          {kind === "image" && s.image ? <Picture src={s.image} alt={s.imageAlt ?? ""} className="mt-6 w-full rounded-2xl" /> : null}
-          {s.body && kind !== "heading" ? <div className="mt-4 max-w-prose" {...field("body")}><RichText text={s.body} /></div> : null}
-          {s.items?.length ? (
-            <ul className="mt-6 grid gap-5 md:grid-cols-2">
-              {s.items.map((it, i) => (
-                <li key={i} className="rounded-xl border p-5">
-                  {it.image ? <Picture src={it.image} alt={plainText(it.meta) ?? ""} className="mb-3 w-full rounded-lg" /> : null}
-                  {it.title ? <h3 className="font-medium">{it.title}</h3> : null}
-                  {it.text ? <div className="mt-1 text-sm opacity-85"><RichText text={it.text} /></div> : null}
-                  {it.url ? <a href={it.url} className="mt-3 inline-block text-sm text-accent underline">{plainText(it.meta) ?? "More"}</a> : null}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {s.ctaLabel ? <Link href={s.ctaUrl ?? "#contact"} className="mt-6 inline-block text-sm text-accent underline">{s.ctaLabel}</Link> : null}
+        <section className="solo-panel solo-generic">
+          <div className="solo-container">
+            {section.headline ? <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2> : null}
+            {section.body ? <div {...f("body")}><RichText text={section.body} /></div> : null}
+            {section.image ? <Picture src={section.image} alt={section.imageAlt ?? ""} className="solo-generic-image" /> : null}
+            <Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-dark" />
+          </div>
         </section>
       );
   }
 }
 
-function ContactForm({ fields, submit }: { fields: Item[]; submit: string }) {
-  const list = (fields.length ? fields : [{ title: "name" }, { title: "email" }, { title: "message" }]) as { title?: string | null }[];
+function FaqList({ items, parent, sectionIndex }: { items: FaqItem[]; parent: unknown; sectionIndex: number }) {
+  const [open, setOpen] = useState<number | null>(null);
   return (
-    <form action={FORM_ENDPOINT ?? "#"} method={FORM_ENDPOINT ? "post" : undefined} className="mt-6 grid max-w-xl gap-4">
-      {list.map((f, i) => {
-        const name = String(f.title ?? "message").replace(/[^a-z0-9]/gi, "_").toLowerCase();
-        const long = /message|question|details|note|bio/i.test(name);
-        const required = /mail|name|organisations?$|date/i.test(name);
-        return (
-          <label key={i} className="grid gap-1 text-sm">
-            <span className="uppercase tracking-wide opacity-70">{name.replace(/_/g, " ")}</span>
-            {long
-              ? <textarea name={name} rows={5} required={required} className="rounded-lg border bg-transparent p-3 text-base" />
-              : <input name={name} type={/mail|date|tel/.test(name) ? name.replace(/(mail|date|tel).*/, (m) => (m === "mail" ? "email" : m)) : "text"} required={required} className="rounded-lg border bg-transparent p-3 text-base" />}
-          </label>
-        );
-      })}
-      <input type="text" name="_gotcha" className="hidden" tabIndex={-1} autoComplete="off" />
-      <button type="submit" className="w-fit rounded-full bg-accent px-5 py-3 text-sm font-medium">{submit}</button>
-      {!FORM_ENDPOINT ? <p className="text-xs opacity-70">Not wired yet: set NEXT_PUBLIC_FORM_ENDPOINT (or swap the action for /api/lead).</p> : null}
+    <div className="solo-faq-list">
+      {items.map((item, i) => (
+        <div key={i} className={`solo-faq-item ${open === i ? "expanded" : ""}`}>
+          <button type="button" className="solo-faq-heading" onClick={() => setOpen(open === i ? null : i)} aria-expanded={open === i}>
+            <span>{item.title}</span>
+            <span className="solo-chevron" aria-hidden="true">⌄</span>
+          </button>
+          <div className="solo-faq-body" {...field(parent, `sections.${sectionIndex}.items.${i}.text`)}>
+            <RichText text={item.text} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ContactForm({ email }: { email: string }) {
+  const fields = [
+    { name: "email", label: "Email address *", type: "email", required: true },
+    { name: "name", label: "Name *", type: "text", required: true },
+    { name: "phone", label: "Phone number", type: "tel", required: false },
+    { name: "message", label: "Message *", type: "textarea", required: true },
+  ];
+
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    if (FORM_ENDPOINT) return;
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const body = `Name: ${data.get("name") ?? ""}\nEmail: ${data.get("email") ?? ""}\nPhone: ${data.get("phone") ?? ""}\n\n${data.get("message") ?? ""}`;
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent("Teacher Traveling enquiry")}&body=${encodeURIComponent(body)}`;
+  }
+
+  return (
+    <form
+      action={FORM_ENDPOINT || undefined}
+      method={FORM_ENDPOINT ? "post" : undefined}
+      onSubmit={onSubmit}
+      className="solo-contact-form"
+    >
+      {fields.map((item) => (
+        <label key={item.name} className="solo-field">
+          <span>{item.label}</span>
+          {item.type === "textarea" ? (
+            <textarea name={item.name} rows={5} required={item.required} />
+          ) : (
+            <input name={item.name} type={item.type} required={item.required} />
+          )}
+        </label>
+      ))}
+      <input type="text" name="_gotcha" className="solo-honey" tabIndex={-1} autoComplete="off" />
+      <button type="submit" className="solo-btn solo-btn-dark">Contact Us</button>
     </form>
   );
 }
