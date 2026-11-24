@@ -1,10 +1,10 @@
-// `tinacms build` generates this client from tina/config.ts.
-import { createClient } from "../../../tina/__generated__/client";
+// If src/lib/tina/client.ts simply creates and exports the client, replace its contents with:
+import { client } from "../../../tina/__generated__/client";
 import { pageQuery, settingsQuery, postQuery, postsQuery } from "./queries";
 
-export const client = createClient({
-  queries: { pageQuery, settingsQuery, postQuery, postsQuery },
-});
+
+export { client };
+export default client;
 
 export const slugToRelativePath = (slug: string[]) =>
   slug.length ? `${slug.join("-")}.md` : "index.md";

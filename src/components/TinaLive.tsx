@@ -1,6 +1,6 @@
 "use client";
 
-import { useTina } from "tinacms";
+import { useTina } from "tinacms/dist/react";
 import type { ReactNode } from "react";
 
 type Props = {
