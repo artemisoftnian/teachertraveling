@@ -1,0 +1,26 @@
+Solo Lifeline conversion notes
+================================
+Site            Teacher Traveling (soloist.ai)
+Target          tina-cloud
+Media strategy  local
+Form strategy   getform
+Pages / blocks  1 / 9
+Files emitted   25 (55 KB)
+
+Order of operations:
+1. unzip, cd into the folder
+2. npm run media   (soloist.ai's CDN disappears 2026-11-30)
+3. npm install && npm run dev -> http://localhost:3000/admin
+4. git init, push to GitHub, import into Vercel or Netlify
+5. move DNS off Solo, then test the enquiry form once
+
+Never deploy the *_submissions.csv files: they hold visitor emails. Put them in _private/.
+
+Checklist:
+  1. Download the media before anything else — node scripts/download-media.mjs pulls 19 files into public/uploads and lists failures.
+  2. Review the block map — 9 blocks were typed automatically; anything under 60% confidence deserves a look before you publish.
+  3. Repo, deploy, environment — GitHub → Vercel → build `tinacms build && next build`, plus a TinaCloud project on the same repo.
+  4. Re-point the form — No form was detected in the export — nothing to rewire.
+  5. Move the domain out of Solo — Solo served soloist.ai. Transfer the registrar and set DNS weeks before 30 Nov 2026.
+  6. Lock the editor to one person — Invite only your wife in TinaCloud; the editor sits behind that login.
+  7. Teach the two-button workflow — Edit → Save. That is the entire job. Content stays Markdown, so switching CMS later costs nothing.

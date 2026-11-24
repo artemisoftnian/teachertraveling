@@ -1,0 +1,197 @@
+{
+  "generatedBy": "Solo Lifeline",
+  "strategy": "local",
+  "deadline": "cdn.soloist.ai disappears with Solo on 2026-11-30",
+  "items": [
+    {
+      "file": "public/uploads/0123530d-fc16-4cbc-be66-6f1287017394.png",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/logo/0123530d-fc16-4cbc-be66-6f1287017394.png",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/logo/0123530d-fc16-4cbc-be66-6f1287017394.png",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 4,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/9f44fbac-b412-4853-8963-ebc6132ed278.webp",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/9f44fbac-b412-4853-8963-ebc6132ed278_2048x2048.webp",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/9f44fbac-b412-4853-8963-ebc6132ed278_2048x2048.webp",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 2,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/ef49bf36-c5fb-491b-a06d-f0d3fdaa58a0.png",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/logo/ef49bf36-c5fb-491b-a06d-f0d3fdaa58a0.png",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/logo/ef49bf36-c5fb-491b-a06d-f0d3fdaa58a0.png",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 2,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/explore-our-travel-programs-educational-to-2.jpeg",
+      "from": "https://images.pexels.com/photos/8761327/pexels-photo-8761327.jpeg?w=2800&q=80&auto=compress",
+      "original": "https://images.pexels.com/photos/8761327/pexels-photo-8761327.jpeg?w=2800&q=80&auto=compress",
+      "host": "images.pexels.com",
+      "variantsSeen": 13,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/explore-our-travel-programs-educational-to-2.jpg",
+      "from": "https://images.unsplash.com/photo-1519734004356-f588de029302?fm=jpg&q=85&w=2400&fit=max",
+      "original": "https://images.unsplash.com/photo-1519734004356-f588de029302?ixid=M3w0OTUyODh8MHwxfHNlYXJjaHwzfHxsYW5ndWFnZSUyMGltbWVyc2lvbnxlbnwwfDB8fHwxNzI2NDI3MTkzfDA&ixlib=rb-4.0.3&w=2800&q=80&auto=format&fit=clip",
+      "host": "images.unsplash.com",
+      "variantsSeen": 13,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/explore-our-travel-programs-educational-to-3.jpg",
+      "from": "https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?fm=jpg&q=85&w=2400&fit=max",
+      "original": "https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?ixid=M3w0OTUyODh8MHwxfHNlYXJjaHw1fHx3cml0aW5nJTIwdHJhdmVsfGVufDB8MHx8fDE3MjY0MjcxNTJ8MA&ixlib=rb-4.0.3&w=2800&q=80&auto=format&fit=clip",
+      "host": "images.unsplash.com",
+      "variantsSeen": 13,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/explore-our-travel-programs-educational-to-4.jpg",
+      "from": "https://images.unsplash.com/photo-1448523183439-d2ac62aca997?fm=jpg&q=85&w=2400&fit=max",
+      "original": "https://images.unsplash.com/photo-1448523183439-d2ac62aca997?ixid=M3w0OTUyODh8MHwxfHNlYXJjaHw1NHx8a29yZWF8ZW58MHwwfHx8MTc0OTU5MTIyNnww&ixlib=rb-4.1.0&w=2800&q=80&auto=format&fit=clip",
+      "host": "images.unsplash.com",
+      "variantsSeen": 13,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/explore-our-travel-programs-educational-to-5.jpg",
+      "from": "https://images.unsplash.com/photo-1573496774379-b930dba17d8b?fm=jpg&q=85&w=2400&fit=max",
+      "original": "https://images.unsplash.com/photo-1573496774379-b930dba17d8b?ixid=M3w0OTUyODh8MHwxfHNlYXJjaHwxNTh8fHRlYWNoZXJzfGVufDB8MHx8fDE3MjcwMzg0OTR8MA&ixlib=rb-4.0.3&w=2800&q=80&auto=format&fit=clip",
+      "host": "images.unsplash.com",
+      "variantsSeen": 13,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/explore-our-travel-programs-educational-to.jpeg",
+      "from": "https://images.pexels.com/photos/5803666/pexels-photo-5803666.jpeg?w=2800&q=80&auto=compress",
+      "original": "https://images.pexels.com/photos/5803666/pexels-photo-5803666.jpeg?w=2800&q=80&auto=compress",
+      "host": "images.pexels.com",
+      "variantsSeen": 13,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/explore-our-travel-programs-educational-to.jpg",
+      "from": "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?fm=jpg&q=85&w=2400&fit=max",
+      "original": "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?ixid=M3w0OTUyODh8MHwxfHNlYXJjaHwxMDR8fGdyb3VwJTIwdHJhdmVsfGVufDB8MHx8fDE3MjY0MjcyOTd8MA&ixlib=rb-4.0.3&w=2800&q=80&auto=format&fit=clip",
+      "host": "images.unsplash.com",
+      "variantsSeen": 13,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/making-memories-one-country-at-a-time-2.webp",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/3af1b7ac-ea90-4fd4-a5a4-a71710cdb1da_2048x2048.webp",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/3af1b7ac-ea90-4fd4-a5a4-a71710cdb1da_2048x2048.webp",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 9,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/making-memories-one-country-at-a-time-3.webp",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/17c5bc71-7eaa-44f0-aa5a-fa97a5399d39_2048x2048.webp",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/17c5bc71-7eaa-44f0-aa5a-fa97a5399d39_2048x2048.webp",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 9,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/making-memories-one-country-at-a-time-4.webp",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/4b4ee8c4-5cff-40f1-87ee-0a0b13dae6ce_2048x2048.webp",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/4b4ee8c4-5cff-40f1-87ee-0a0b13dae6ce_2048x2048.webp",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 9,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/making-memories-one-country-at-a-time-5.webp",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/aa75f99c-669f-4446-9aad-76d3123142e4_2048x2048.webp",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/aa75f99c-669f-4446-9aad-76d3123142e4_2048x2048.webp",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 9,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/making-memories-one-country-at-a-time-6.webp",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/35fc5b29-db60-40b1-a91d-5f2b7041097b_2048x2048.webp",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/35fc5b29-db60-40b1-a91d-5f2b7041097b_2048x2048.webp",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 9,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/making-memories-one-country-at-a-time-7.webp",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/f816b809-13b8-42a2-b4d8-00877a043e3a_2048x2048.webp",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/f816b809-13b8-42a2-b4d8-00877a043e3a_2048x2048.webp",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 9,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/making-memories-one-country-at-a-time-8.webp",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/db5026cf-ac9a-49a8-9e42-b299a04edb81_2048x2048.webp",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/db5026cf-ac9a-49a8-9e42-b299a04edb81_2048x2048.webp",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 9,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/making-memories-one-country-at-a-time.webp",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/9ae4da3a-87bd-410e-a32d-f3860efe3e1e_2048x2048.webp",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/9ae4da3a-87bd-410e-a32d-f3860efe3e1e_2048x2048.webp",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 9,
+      "usedBy": [
+        "/"
+      ]
+    },
+    {
+      "file": "public/uploads/travel-expands-perspective-without-it-you-.webp",
+      "from": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/a9e803ab-9d64-451d-969b-bf47ab75f454_2048x2048.webp",
+      "original": "https://cdn.soloist.ai/a829fa6d-88b5-49aa-8b33-575b97b1d911/a9e803ab-9d64-451d-969b-bf47ab75f454_2048x2048.webp",
+      "host": "cdn.soloist.ai",
+      "variantsSeen": 4,
+      "usedBy": [
+        "/"
+      ]
+    }
+  ]
+}

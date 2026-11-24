@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+/* Measured from the Solo export: soloist.ai */
+:root {
+  --paper: #ffffff;
+  --ink: #101010;
+  --accent: #5b5b66;
+  --accent-ink: #ffffff;
+  --font-display: "Gloock", "Fraunces", Georgia, serif;
+  --font-body: "Libre Franklin", "Inter", system-ui, sans-serif;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-accent: var(--accent);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.015em; }
+.prose p { margin: 0 0 1rem; line-height: 1.7; }
+img { max-width: 100%; height: auto; }
+a { color: inherit; }

@@ -1,0 +1,11 @@
+name: rebuild
+on:
+  push:
+    paths:
+      - content/**
+      - public/uploads/**
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
