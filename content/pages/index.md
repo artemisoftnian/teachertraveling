@@ -115,4 +115,4 @@ sections:
     email: teachertravelingworld@gmail.com
 ---
 
-<!-- Rebuilt from the 11 sections in the Mozilla Solo export. Editor labels, click targets, visual controls, and Solo section templates updated for maintenance. -->
+<!-- Rebuilt from the 11 sections in the Mozilla Solo export. Editor labels, click targets, visual controls, SEO previews, and Solo section templates updated for maintenance. -->

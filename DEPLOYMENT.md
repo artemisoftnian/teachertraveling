@@ -178,7 +178,7 @@ Visual editor extras:
 - Edit-only badges on heads, text, photos, buttons, captions, reviews, and FAQ items.
 - Safe color presets: White, Light grey, Yellow, Blue, Dark.
 - Safe text sizes: Small, Normal, Large, Extra large.
-- Live Google title preview under Site settings → Search results.
+- Live Google title and social card previews under Site settings → Search results.
 
 Do not change **Colors and fonts** in Site settings unless a brand change is requested. It controls the global palette and typefaces.
 

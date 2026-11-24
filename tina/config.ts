@@ -107,6 +107,32 @@ function SeoTitleField({ input, field }: any) {
   );
 }
 
+function SeoDescriptionField({ input, field }: any) {
+  const description = input.value || "Add a short description of Teacher Traveling.";
+  return React.createElement(
+    "div",
+    { style: { marginBottom: "16px" } },
+    React.createElement("label", { htmlFor: input.name, style: { display: "block", marginBottom: "4px", fontWeight: 600 } }, field.label),
+    React.createElement("textarea", {
+      ...input,
+      id: input.name,
+      rows: 3,
+      style: { width: "100%", padding: "8px", border: "1px solid #cfcfd8", borderRadius: "4px", fontFamily: "inherit" },
+    }),
+    React.createElement(
+      "div",
+      { style: { marginTop: "8px", padding: "12px", border: "1px solid #e1e1e1", borderRadius: "6px", background: "#fff" } },
+      React.createElement("div", { style: { fontSize: "12px", color: "#5b5b66" } }, "Social preview"),
+      React.createElement("div", { style: { marginTop: "8px", padding: "12px", border: "1px solid #e1e1e1", borderRadius: "4px" } },
+        React.createElement("div", { style: { height: "64px", marginBottom: "8px", background: "#f3b000" } }),
+        React.createElement("div", { style: { fontSize: "11px", color: "#5b5b66" } }, "teachertraveling.com"),
+        React.createElement("div", { style: { fontWeight: 600 } }, "Teacher Traveling"),
+        React.createElement("div", { style: { fontSize: "13px", lineHeight: "1.4" } }, description)
+      )
+    )
+  );
+}
+
 function EditorGuide() {
   const [done, setDone] = React.useState<Record<string, boolean>>({});
 
@@ -784,7 +810,7 @@ export default defineConfig({
             ui: { description: "Title and description shown in Google." },
             fields: [
               { name: "title", label: "Title tag", type: "string", ui: { component: SeoTitleField, description: "Preview updates as you type." } },
-              { name: "description", label: "Meta description", type: "string", ui: { component: "textarea", description: "One or two sentences. Keep it under 160 characters." } },
+              { name: "description", label: "Meta description", type: "string", ui: { component: SeoDescriptionField, description: "One or two sentences. Keep it under 160 characters. Preview updates as you type." } },
             ],
           },
         ],
