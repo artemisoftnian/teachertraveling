@@ -2,10 +2,10 @@
 title: 'Let the World Be Your Guide to Learning! - Teacher Traveling'
 description: 'Join Cynthia Nieves, a dedicated ESL and bilingual educator with over 24 years of experience, as she not only shares her expertise in creating unforgettable travel experiences but also leads student groups on educational tours around the world. Teachers can discover the secrets to organizing successful, enriching trips that immerse students in diverse cultures and foster life-changing learning experiences.Together, let''s embark on a journey and transform lives through the power of travel!'
 sections:
-- type: image
+- _template: image
   image: /uploads/0123530d-fc16-4cbc-be66-6f1287017394.png
   imageAlt: Logo
-- type: prose
+- _template: prose
   headline: 'Travel expands perspective, without it, you miss life''s story.'
   body: |-
     Join Cynthia Nieves, a dedicated ESL and bilingual educator with over 24 years of experience, as she not only shares her expertise in creating unforgettable travel experiences but also leads student groups on educational tours around the world. Teachers can discover the secrets to organizing successful, enriching trips that immerse students in diverse cultures and foster life-changing learning experiences.
@@ -13,7 +13,7 @@ sections:
     Together, let's embark on a journey and transform lives through the power of travel!
   ctaLabel: Contact Us
   ctaUrl: /index#contact-1
-- type: gallery
+- _template: gallery
   headline: Explore our Travel Programs & Educational Tools
   body: 'For more information, reach out to Mrs. Cynthia Nieves at [teachertravelingworld@gmail.com](mailto:teachertravelingworld@gmail.com).'
   items:
@@ -35,7 +35,7 @@ sections:
   imageAlt: 'This shot was taken during a roadtrip with a couple of friends in the Dolomites. This pretty much sums up the lovely adventures we had over there – just us (and some beers) in the mountains for one week. Although it is just a snapshot, it captures a true, precious moment of togetherness and friendship.'
   ctaLabel: Educational trips
   ctaUrl: 'https://www.facebook.com/share/g/v318RxsxLgav9bQu/'
-- type: gallery
+- _template: gallery
   headline: 'Making memories, one country at a time.'
   items:
     - image: /uploads/making-memories-one-country-at-a-time.webp
@@ -47,20 +47,20 @@ sections:
     - image: /uploads/making-memories-one-country-at-a-time-7.webp
     - image: /uploads/making-memories-one-country-at-a-time-8.webp
   image: /uploads/making-memories-one-country-at-a-time.webp
-- type: prose
+- _template: prose
   headline: 'Travel transforms lives, one journey at a time.'
   body: 'Discover the wide wonderful classroom our unique world is as a teacher, student or lifelong traveler.'
-- type: cta
+- _template: cta
   headline: 'Lessons & luggage: my two constants.'
   ctaLabel: Schedule Now
-- type: topics
+- _template: topics
   headline: Reviews
   body: '"My experience in Japan 2023, unforgettable. I give the organizers an A+ rating. I would repeat the experience again."'
   items:
     - text: '"My mom and I have had the opportunity to travel to various destinations, including three times to the Land of the Rising Sun Japan, and the experience has been excellent—very organized, peaceful, and above all, safe! I hope to travel to another country soon and have a new adventure! I recommend Teacher Traveling Cynthia 100%." Dennisse Arce- Adult traveler "My mom and I have had the opportunity to travel to various destinations, including three times to the Land of the Rising Sun Japan, and the experience has been excellent—very organized, peaceful, and above all, safe! I hope to travel to another country soon and have a new adventure! I recommend Teacher Traveling Cynthia 100%." Dennisse A'
     - text: '"To this day, I appreciate the independence and confidence that going on these trips has given me. I&#x27;m 31 now, and the experience I gained 15 years ago from my first trip to Canada and Europe is unparalleled. Hands down, 2 of the best things that have happened to me have been going on those trips as a child with the amazing teachers I had. " Carla Vita - alumni & parent "To this day, I appreciate the independence and confidence that going on these trips has given me. I&#x27;m 31 now, and the experience I gained 15 years ago from my first trip to Canada and Europe is unparalleled. Hands down, 2 of the best things that have happened to me have been going on those trips as a child with the'
     - text: '"My exchange trip to New Hampshire was an incredible immersion into their culture and language. Living with a local family who made me feel at home helped me quickly adapt to speaking English in daily interactions. Experiencing high school in the U.S. pushed me to improve my language skills and gain confidence outside the classroom. The experience went beyond language; I learned to understand cultural and local expressions, even humor, which made me feel more connected to the people around me. This trip didn’t just improve my English, it deepened my appreciation for a different way of life, making it a truly unforgettable journey." Krystal Pastrana , Student Traveler "My exchange trip to New'
-- type: faq
+- _template: faq
   headline: Frequently Asked Questions
   items:
     - title: 'What destinations do you cover for educational trips?'
@@ -77,7 +77,7 @@ sections:
       text: 'How do I start planning a trip with Teacher Traveling? Simply reach out to us through our website''s contact form. We''ll schedule a consultation to discuss your goals, preferences, and how we can assist you in creating an unforgettable trip. Simply reach out to us through our website''s contact form. We''ll schedule a consultation to discuss your goals, preferences, and how we can assist you in creating an unforgettable trip. Simply reach out to us through our website''s contact form. We''ll schedule a consultation to discuss your goals, preferences, and how we can assist you in creating an unforgettable trip. Simply reach out to us through our website''s contact form. We''ll schedule a consultatio'
     - title: 'Which languages do you speak and teach?'
       text: 'Which languages do you speak and teach? I speak Spanish and English. I am an English, ESL & Bilingual education teacher in High School and College levels. Any of our services can be in Spanish or English. We are located in Puerto Rico. I speak Spanish and English. I am an English, ESL & Bilingual education teacher in High School and College levels. Any of our services can be in Spanish or English. We are located in Puerto Rico. I speak Spanish and English. I am an English, ESL & Bilingual education teacher in High School and College levels. Any of our services can be in Spanish or English. We are located in Puerto Rico. I speak Spanish and English. I am an English, ESL & Bilingual education'
-- type: cta
+- _template: cta
   headline: Contact Us
   ctaLabel: teachertravelingworld@gmail.com
   ctaUrl: 'mailto:teachertravelingworld@gmail.com'

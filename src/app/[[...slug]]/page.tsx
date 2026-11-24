@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { client, slugToRelativePath } from "@/lib/tina/client";
 import { pageWithSettingsQuery } from "@/lib/tina/queries";
 import { TinaLive } from "@/components/TinaLive";
-import { Blocks } from "@/components/Blocks";
 
 export const dynamic = "force-dynamic";
 
@@ -36,14 +35,9 @@ export default async function Page({
   return (
     <TinaLive
       query={pageWithSettingsQuery}
-      data={data as unknown as Record<string, unknown>}
+      data={data}
       variables={variables}
       live={sp["tina-admin"] === "true"}
-    >
-      {(d) => {
-        const live = d as PageData;
-        return <Blocks page={live.page ?? {}} settings={live.settings} />;
-      }}
-    </TinaLive>
+    />
   );
 }

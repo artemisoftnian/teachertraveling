@@ -7,7 +7,8 @@ import { tinaField } from "tinacms/dist/react";
 
 type Item = { title?: string | null; text?: string | null; meta?: string | null; url?: string | null; image?: string | null };
 export type Section = {
-  type: string;
+  __typename?: string;
+  type?: string;
   headline?: string | null;
   eyebrow?: string | null;
   body?: string | null;
@@ -68,7 +69,8 @@ export function Blocks({ page, settings }: { page: { title?: string; sections?: 
 function Section({ s, parent, index }: { s: Section; parent: unknown; index: number }) {
   const wrap = "mx-auto max-w-5xl px-6 py-14";
   const field = (name: string) => ({ "data-tina-field": tinaField(parent as never, `sections.${index}.${name}`) });
-  switch (s.type) {
+  const kind = s.type ?? s.__typename?.replace(/^PageSections/, "").toLowerCase() ?? "";
+  switch (kind) {
     case "hero":
       return (
         <section className={`${wrap} grid items-center gap-10 md:grid-cols-2`}>
@@ -159,8 +161,8 @@ function Section({ s, parent, index }: { s: Section; parent: unknown; index: num
       return (
         <section className={wrap}>
           {s.headline ? <h2 className="font-display text-3xl" {...field("headline")}>{s.headline}</h2> : null}
-          {s.type === "image" && s.image ? <Picture src={s.image} alt={s.imageAlt ?? ""} className="mt-6 w-full rounded-2xl" /> : null}
-          {s.body && s.type !== "heading" ? <div className="mt-4 max-w-prose" {...field("body")}><Md text={s.body} /></div> : null}
+          {kind === "image" && s.image ? <Picture src={s.image} alt={s.imageAlt ?? ""} className="mt-6 w-full rounded-2xl" /> : null}
+          {s.body && kind !== "heading" ? <div className="mt-4 max-w-prose" {...field("body")}><Md text={s.body} /></div> : null}
           {s.items?.length ? (
             <ul className="mt-6 grid gap-5 md:grid-cols-2">
               {s.items.map((it, i) => (
