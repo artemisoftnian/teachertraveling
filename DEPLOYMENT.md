@@ -287,7 +287,11 @@ Check `next.config.mjs`. It must rewrite `/admin` to `/admin/index.html`. Also c
 
 ### Build fails with `ERR_CLOUD_CHECK_FAILED`
 
-The Tina Cloud token or client ID is missing or Cloud has not reindexed after a schema change. Add the environment variables, push a config-plus-content commit, wait for reindex, then deploy again.
+This usually means Tina Cloud has not reindexed after a schema change. Add the environment variables, push a config-plus-content commit, wait for reindex, then deploy again.
+
+The error can also come from mixed GraphQL versions. This repo pins one version through `overrides.graphql` in `package.json`. Keep that override. Do not add a separate top-level `graphql` dependency.
+
+A local build may print `Skipping schema check due to conflicting GraphQL versions`. That is a local dependency layout problem, not a successful cloud check. Use `npm ci` before testing a deployment. A clean build should complete the cloud schema check with no skip warning.
 
 ### Editor opens the full-page form
 
@@ -312,6 +316,8 @@ Hard-refresh `/admin`. If the section is still missing, Tina Cloud has not reind
 ## 11. Important files
 
 ```text
+package.json                         Dependencies and GraphQL version pin
+package-lock.json                    Locked clean-install dependency tree
 tina/config.ts                       Tina schema, labels, editor tools
 tina/tina-lock.json                  Generated schema lock
 src/components/Blocks.tsx            Section renderers and editor visual tools
