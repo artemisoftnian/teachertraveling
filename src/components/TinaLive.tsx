@@ -14,24 +14,11 @@ type Props = {
   query: string;
   data: PageData;
   variables: Record<string, unknown>;
-  live?: boolean;
 };
 
-export function TinaLive({ live, ...props }: Props) {
-  if (!live) return <PageView data={props.data} />;
-  return <Live {...props} />;
-}
-
-function PageView({ data }: { data: PageData }) {
-  return (
-    <Blocks
-      page={(data.page ?? {}) as BlocksProps["page"]}
-      settings={data.settings}
-    />
-  );
-}
-
-function Live(props: Omit<Props, "live">) {
+export function TinaLive(props: Props) {
+  // useTina must run on every render, including production. In production it
+  // passes data through. Inside /admin it enables click-to-edit and live data.
   const liveData = useTina(props).data as PageData;
   return (
     <Blocks

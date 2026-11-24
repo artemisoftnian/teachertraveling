@@ -24,9 +24,9 @@ function EditorGuide() {
     React.createElement(
       "p",
       { style: { margin: "8px 0 0", lineHeight: "1.5" } },
-      "Edit one section at a time. Open ",
+      "Click text, photos, or buttons on the page to jump to that field. You can also open ",
       React.createElement("strong", null, "Page sections"),
-      ", click a section, then change only the text or photo you need. Drag the handle to reorder sections. Save sends the change to GitHub."
+      " in the sidebar. Drag the handle to reorder sections. Save sends the change to GitHub."
     ),
     React.createElement(
       "p",
@@ -67,6 +67,7 @@ export default defineConfig({
             readonly: true,
             description: "Filename. Leave this as index.md.",
           },
+          router: ({ document }) => document._sys?.filename === "index" ? "/" : undefined,
         },
         fields: [
           {

@@ -85,16 +85,17 @@ function plainText(value?: RichTextValue): string | undefined {
 function field(parent: unknown, path: string) {
   return { "data-tina-field": tinaField(parent as never, path) };
 }
+type FieldAttrs = ReturnType<typeof field>;
 
 function external(url?: string | null) {
   return !!url && /^https?:\/\//.test(url);
 }
 
-function Cta({ label, url, className = "solo-btn" }: { label?: string | null; url?: string | null; className?: string }) {
+function Cta({ label, url, className = "solo-btn", fieldAttrs }: { label?: string | null; url?: string | null; className?: string; fieldAttrs?: FieldAttrs }) {
   if (!label) return null;
   const href = url || CONTACT_LINK;
   const props = external(href) ? { target: "_blank", rel: "noreferrer" } : {};
-  return <a href={href} className={className} {...props}>{label}</a>;
+  return <a href={href} className={className} {...fieldAttrs} {...props}>{label}</a>;
 }
 
 function Carousel<T>({ items, render, label }: { items: T[]; render: (item: T, index: number) => React.ReactNode; label: string }) {
@@ -136,17 +137,17 @@ export function Blocks({ page, settings }: { page: { title?: string; sections?: 
     <div className="solo-shell">
       <header className="solo-header">
         <div className="solo-header-inner">
-          <Link href="/" className="solo-logo" aria-label={settings?.name ?? "Home"}>
+          <Link href="/" className="solo-logo" aria-label={settings?.name ?? "Home"} {...field(settings, "logo")}>
             <Picture src={settings?.logo} alt={settings?.name ?? ""} className="solo-logo-img" />
           </Link>
-          <nav className="solo-nav" aria-label="Main navigation" {...field(settings, "nav")}>
-            {(settings?.nav ?? []).map((item) => (
-              <Link key={`${item.href}-${item.label}`} href={item.href} className="solo-nav-link">{item.label}</Link>
+          <nav className="solo-nav" aria-label="Main navigation">
+            {(settings?.nav ?? []).map((item, i) => (
+              <Link key={`${item.href}-${item.label}`} href={item.href} className="solo-nav-link" {...field(settings, `nav.${i}.label`)}>{item.label}</Link>
             ))}
           </nav>
-          <div className="solo-social" {...field(settings, "social")}>
-            {(settings?.social ?? []).map((item) => (
-              <a key={item.url} href={item.url} target="_blank" rel="noreferrer" aria-label={item.platform}>
+          <div className="solo-social">
+            {(settings?.social ?? []).map((item, i) => (
+              <a key={item.url} href={item.url} target="_blank" rel="noreferrer" aria-label={item.platform} {...field(settings, `social.${i}.url`)}>
                 <SocialIcon platform={item.platform} />
               </a>
             ))}
@@ -157,12 +158,12 @@ export function Blocks({ page, settings }: { page: { title?: string; sections?: 
         </div>
         {menuOpen ? (
           <nav className="solo-mobile-nav" aria-label="Mobile navigation">
-            {(settings?.nav ?? []).map((item) => (
-              <Link key={`m-${item.href}-${item.label}`} href={item.href} onClick={() => setMenuOpen(false)}>{item.label}</Link>
+            {(settings?.nav ?? []).map((item, i) => (
+              <Link key={`m-${item.href}-${item.label}`} href={item.href} onClick={() => setMenuOpen(false)} {...field(settings, `nav.${i}.label`)}>{item.label}</Link>
             ))}
             <div className="solo-mobile-social">
-              {(settings?.social ?? []).map((item) => (
-                <a key={`m-${item.url}`} href={item.url} target="_blank" rel="noreferrer" aria-label={item.platform}>
+              {(settings?.social ?? []).map((item, i) => (
+                <a key={`m-${item.url}`} href={item.url} target="_blank" rel="noreferrer" aria-label={item.platform} {...field(settings, `social.${i}.url`)}>
                   <SocialIcon platform={item.platform} />
                 </a>
               ))}
@@ -179,12 +180,12 @@ export function Blocks({ page, settings }: { page: { title?: string; sections?: 
 
       <footer className="solo-footer">
         <div className="solo-footer-inner">
-          <Link href="/" className="solo-footer-logo">
+          <Link href="/" className="solo-footer-logo" {...field(settings, "logo")}>
             <Picture src={settings?.logo} alt={settings?.name ?? ""} className="solo-logo-img" />
           </Link>
           <div className="solo-footer-body">
             {settings?.footerLink ? (
-              <a href={settings.footerLink} target="_blank" rel="noreferrer" className="solo-footer-link" {...field(settings, "footerLink")}>
+              <a href={settings.footerLink} target="_blank" rel="noreferrer" className="solo-footer-link" {...field(settings, "footerLinkLabel")}>
                 {settings.footerLinkLabel ?? settings.footerLink}
               </a>
             ) : null}
@@ -208,7 +209,7 @@ function Section({ section, parent, index }: { section: Section; parent: unknown
           <div className="solo-container solo-intro-inner">
             <h1 {...f("headline")}>{section.headline}</h1>
             <div className="solo-intro-copy" {...f("body")}><RichText text={section.body} /></div>
-            <div className="solo-intro-cta" {...f("ctaUrl")}><Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-light" /></div>
+            <div className="solo-intro-cta"><Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-light" fieldAttrs={f("ctaLabel")} /></div>
           </div>
         </section>
       );
@@ -220,14 +221,19 @@ function Section({ section, parent, index }: { section: Section; parent: unknown
             <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2>
             <div className="solo-service-grid">
               {items.map((item, i) => (
-                <article key={i} className="solo-service-card" {...field(parent, `sections.${index}.items.${i}.body`)}>
-                  <div className="solo-service-image">
+                <article key={i} className="solo-service-card">
+                  <div className="solo-service-image" {...field(parent, `sections.${index}.items.${i}.image`)}>
                     <Picture src={item.image} alt={item.title ?? ""} />
                   </div>
-                  <h3>{item.title}</h3>
-                  {item.kicker ? <h4>{item.kicker}</h4> : null}
-                  <RichText text={item.body} />
-                  {item.ctaLabel ? <Cta label={item.ctaLabel} url={item.ctaUrl} className="solo-btn solo-btn-dark" /> : null}
+                  <h3 {...field(parent, `sections.${index}.items.${i}.title`)}>{item.title}</h3>
+                  {item.kicker ? <h4 {...field(parent, `sections.${index}.items.${i}.kicker`)}>{item.kicker}</h4> : null}
+                  <div {...field(parent, `sections.${index}.items.${i}.body`)}><RichText text={item.body} /></div>
+                  <Cta
+                    label={item.ctaLabel}
+                    url={item.ctaUrl}
+                    className="solo-btn solo-btn-dark"
+                    fieldAttrs={field(parent, `sections.${index}.items.${i}.ctaLabel`)}
+                  />
                 </article>
               ))}
             </div>
@@ -245,7 +251,9 @@ function Section({ section, parent, index }: { section: Section; parent: unknown
               label="photo"
               render={(item, i) => (
                 <figure className="solo-gallery-item">
-                  <Picture src={item.image} alt={item.caption ?? ""} />
+                  <div {...field(parent, `sections.${index}.items.${i}.image`)}>
+                    <Picture src={item.image} alt={item.caption ?? ""} />
+                  </div>
                   <figcaption {...field(parent, `sections.${index}.items.${i}.caption`)}>{item.caption}</figcaption>
                 </figure>
               )}
@@ -266,7 +274,7 @@ function Section({ section, parent, index }: { section: Section; parent: unknown
 
     case "ImageBanner":
       return (
-        <section id="imagebanner-1" className="solo-image-banner" style={{ backgroundImage: `linear-gradient(rgba(255,255,255,.2), rgba(255,255,255,.2)), url("${section.image ?? ""}")` }} aria-hidden="true" />
+        <section id="imagebanner-1" className="solo-image-banner" style={{ backgroundImage: `linear-gradient(rgba(255,255,255,.2), rgba(255,255,255,.2)), url("${section.image ?? ""}")` }} {...f("image")} aria-hidden="true" />
       );
 
     case "Scheduling":
@@ -275,7 +283,7 @@ function Section({ section, parent, index }: { section: Section; parent: unknown
           <div className="solo-container solo-banner-inner">
             <h2 {...f("headline")}>{section.headline}</h2>
             <div {...f("body")}><RichText text={section.body} /></div>
-            <Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-dark" />
+            <Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-dark" fieldAttrs={f("ctaLabel")} />
           </div>
         </section>
       );
@@ -328,8 +336,8 @@ function Section({ section, parent, index }: { section: Section; parent: unknown
           <div className="solo-container">
             {section.headline ? <h2 className="solo-heading" {...f("headline")}>{section.headline}</h2> : null}
             {section.body ? <div {...f("body")}><RichText text={section.body} /></div> : null}
-            {section.image ? <Picture src={section.image} alt={section.imageAlt ?? ""} className="solo-generic-image" /> : null}
-            <Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-dark" />
+            {section.image ? <div {...f("image")}><Picture src={section.image} alt={section.imageAlt ?? ""} className="solo-generic-image" /></div> : null}
+            <Cta label={section.ctaLabel} url={section.ctaUrl} className="solo-btn solo-btn-dark" fieldAttrs={f("ctaLabel")} />
           </div>
         </section>
       );
@@ -343,7 +351,7 @@ function FaqList({ items, parent, sectionIndex }: { items: FaqItem[]; parent: un
       {items.map((item, i) => (
         <div key={i} className={`solo-faq-item ${open === i ? "expanded" : ""}`}>
           <button type="button" className="solo-faq-heading" onClick={() => setOpen(open === i ? null : i)} aria-expanded={open === i}>
-            <span>{item.title}</span>
+            <span {...field(parent, `sections.${sectionIndex}.items.${i}.title`)}>{item.title}</span>
             <span className="solo-chevron" aria-hidden="true">⌄</span>
           </button>
           <div className="solo-faq-body" {...field(parent, `sections.${sectionIndex}.items.${i}.text`)}>

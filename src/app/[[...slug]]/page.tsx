@@ -16,13 +16,10 @@ type PageData = {
 
 export default async function Page({
   params,
-  searchParams,
 }: {
   params: Promise<{ slug?: string[] }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { slug = [] } = await params;
-  const sp = await searchParams;
   const relativePath = slugToRelativePath(slug);
   const variables = { relativePath, settingsRelativePath: "settings.json" };
   const result = await client
@@ -37,7 +34,6 @@ export default async function Page({
       query={pageWithSettingsQuery}
       data={data}
       variables={variables}
-      live={sp["tina-admin"] === "true"}
     />
   );
 }
