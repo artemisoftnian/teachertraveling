@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { client } from "@/lib/tina/client";
-import { tinaField } from "tinacms/dist/react";
+import { tinaField } from "@/lib/tina/field";
 
 export default async function Post({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
