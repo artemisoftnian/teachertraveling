@@ -94,7 +94,7 @@ export default defineConfig({
                   {
                     name: "body",
                     label: "Body text",
-                    type: "rich-text",
+                    type: "rich-text", 
                   },
                   {
                     name: "items",
