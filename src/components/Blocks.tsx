@@ -4,14 +4,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { tinaField } from "tinacms/dist/react";
+import { TinaMarkdown, type TinaMarkdownContent } from "tinacms/dist/rich-text";
 
-type Item = { title?: string | null; text?: string | null; meta?: string | null; url?: string | null; image?: string | null };
+type RichTextValue = string | TinaMarkdownContent | null;
+type Item = { title?: string | null; text?: RichTextValue; meta?: RichTextValue; url?: string | null; image?: string | null };
 export type Section = {
   __typename?: string;
   type?: string;
   headline?: string | null;
   eyebrow?: string | null;
-  body?: string | null;
+  body?: RichTextValue;
   image?: string | null;
   imageAlt?: string | null;
   ctaLabel?: string | null;
@@ -37,6 +39,21 @@ function Md({ text }: { text?: string | null }) {
     .replace(/\n/g, "<br />")
     .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a class="underline" href="$2">$1</a>');
   return <div className="prose" dangerouslySetInnerHTML={{ __html: `<p>${html}</p>` }} />;
+}
+
+function RichText({ text }: { text?: RichTextValue }) {
+  if (!text) return null;
+  if (typeof text === "string") return <Md text={text} />;
+  return <div className="prose"><TinaMarkdown content={text} /></div>;
+}
+
+function plainText(value?: RichTextValue): string | undefined {
+  if (!value) return undefined;
+  if (typeof value === "string") return value;
+  const nodeText = (node: TinaMarkdownContent): string =>
+    ("text" in node ? String((node as { text?: string }).text ?? "") : "") +
+    (node.children ?? []).map(nodeText).join("");
+  return nodeText(value);
 }
 
 export function Blocks({ page, settings }: { page: { title?: string; sections?: Section[] }; settings?: { name?: string; nav?: { label: string; href: string }[]; social?: { platform: string; url: string }[] } }) {
@@ -77,7 +94,7 @@ function Section({ s, parent, index }: { s: Section; parent: unknown; index: num
           <div>
             {s.eyebrow ? <p className="mb-3 text-sm uppercase tracking-wide text-accent" {...field("eyebrow")}>{s.eyebrow}</p> : null}
             <h1 className="font-display text-4xl leading-[1.1] md:text-5xl" {...field("headline")}>{s.headline}</h1>
-            <div className="mt-5 max-w-prose opacity-90" {...field("body")}><Md text={s.body} /></div>
+            <div className="mt-5 max-w-prose opacity-90" {...field("body")}><RichText text={s.body} /></div>
             {s.ctaLabel ? <Link href={s.ctaUrl ?? "#contact"} className="mt-6 inline-block rounded-full bg-accent px-5 py-3 text-sm font-medium" style={{ color: "var(--accent-ink, #fff)" }}>{s.ctaLabel}</Link> : null}
           </div>
           <Picture src={s.image} alt={s.imageAlt ?? ""} className="w-full rounded-2xl" />
@@ -87,7 +104,7 @@ function Section({ s, parent, index }: { s: Section; parent: unknown; index: num
       return (
         <section id="contact" className={wrap}>
           <h2 className="font-display text-3xl" {...field("headline")}>{s.headline ?? "Get in touch"}</h2>
-          <div className="mt-4 max-w-prose opacity-90" {...field("body")}><Md text={s.body} /></div>
+          <div className="mt-4 max-w-prose opacity-90" {...field("body")}><RichText text={s.body} /></div>
           <ContactForm fields={(s.items ?? []) as Item[]} submit={s.ctaLabel ?? "Send"} />
         </section>
       );
@@ -96,7 +113,7 @@ function Section({ s, parent, index }: { s: Section; parent: unknown; index: num
         <section className={`${wrap}`}>
           <div className="rounded-2xl bg-ink/5 p-10 text-center">
             <h2 className="font-display text-3xl" {...field("headline")}>{s.headline}</h2>
-            <div className="mx-auto mt-3 max-w-prose opacity-90" {...field("body")}><Md text={s.body} /></div>
+            <div className="mx-auto mt-3 max-w-prose opacity-90" {...field("body")}><RichText text={s.body} /></div>
             {s.ctaLabel ? <Link href={s.ctaUrl ?? "#contact"} className="mt-6 inline-block rounded-full bg-accent px-5 py-3 text-sm font-medium">{s.ctaLabel}</Link> : null}
           </div>
         </section>
@@ -108,7 +125,7 @@ function Section({ s, parent, index }: { s: Section; parent: unknown; index: num
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {(s.items ?? []).map((it, i) => (
               <figure key={i} className="overflow-hidden rounded-xl bg-ink/5">
-                <Picture src={it.image} alt={it.meta ?? it.title ?? ""} className="w-full" />
+                <Picture src={it.image} alt={plainText(it.meta) ?? it.title ?? ""} className="w-full" />
                 {it.title ? <figcaption className="px-4 py-3 text-sm">{it.title}</figcaption> : null}
               </figure>
             ))}
@@ -123,8 +140,8 @@ function Section({ s, parent, index }: { s: Section; parent: unknown; index: num
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             {(s.items ?? []).map((it, i) => (
               <blockquote key={i} className="border-l-2 border-accent pl-4">
-                <p className="font-display text-lg leading-relaxed">“{it.text || it.title}”</p>
-                {it.meta ? <cite className="mt-2 block text-sm not-italic opacity-70">{it.meta}</cite> : null}
+                <div className="font-display text-lg leading-relaxed">“<RichText text={it.text ?? it.title} />”</div>
+                {it.meta ? <cite className="mt-2 block text-sm not-italic opacity-70">{plainText(it.meta)}</cite> : null}
               </blockquote>
             ))}
           </div>
@@ -138,7 +155,7 @@ function Section({ s, parent, index }: { s: Section; parent: unknown; index: num
             {(s.items ?? []).map((it, i) => (
               <details key={i} className="py-4">
                 <summary className="cursor-pointer font-medium">{it.title}</summary>
-                <div className="mt-2 opacity-90"><Md text={it.text} /></div>
+                <div className="mt-2 opacity-90"><RichText text={it.text} /></div>
               </details>
             ))}
           </div>
@@ -151,7 +168,7 @@ function Section({ s, parent, index }: { s: Section; parent: unknown; index: num
             {(s.items ?? []).map((it, i) => (
               <div key={i}>
                 <div className="font-display text-3xl text-accent">{it.title}</div>
-                <div className="mt-1 text-sm opacity-80">{it.text}</div>
+                <div className="mt-1 text-sm opacity-80"><RichText text={it.text} /></div>
               </div>
             ))}
           </div>
@@ -162,15 +179,15 @@ function Section({ s, parent, index }: { s: Section; parent: unknown; index: num
         <section className={wrap}>
           {s.headline ? <h2 className="font-display text-3xl" {...field("headline")}>{s.headline}</h2> : null}
           {kind === "image" && s.image ? <Picture src={s.image} alt={s.imageAlt ?? ""} className="mt-6 w-full rounded-2xl" /> : null}
-          {s.body && kind !== "heading" ? <div className="mt-4 max-w-prose" {...field("body")}><Md text={s.body} /></div> : null}
+          {s.body && kind !== "heading" ? <div className="mt-4 max-w-prose" {...field("body")}><RichText text={s.body} /></div> : null}
           {s.items?.length ? (
             <ul className="mt-6 grid gap-5 md:grid-cols-2">
               {s.items.map((it, i) => (
                 <li key={i} className="rounded-xl border p-5">
-                  {it.image ? <Picture src={it.image} alt={it.meta ?? ""} className="mb-3 w-full rounded-lg" /> : null}
+                  {it.image ? <Picture src={it.image} alt={plainText(it.meta) ?? ""} className="mb-3 w-full rounded-lg" /> : null}
                   {it.title ? <h3 className="font-medium">{it.title}</h3> : null}
-                  {it.text ? <div className="mt-1 text-sm opacity-85"><Md text={it.text} /></div> : null}
-                  {it.url ? <a href={it.url} className="mt-3 inline-block text-sm text-accent underline">{it.meta || "More"}</a> : null}
+                  {it.text ? <div className="mt-1 text-sm opacity-85"><RichText text={it.text} /></div> : null}
+                  {it.url ? <a href={it.url} className="mt-3 inline-block text-sm text-accent underline">{plainText(it.meta) ?? "More"}</a> : null}
                 </li>
               ))}
             </ul>
