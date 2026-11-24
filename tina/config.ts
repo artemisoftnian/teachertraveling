@@ -5,6 +5,7 @@ import { defineConfig } from "tinacms";
  * Teacher Traveling, rebuilt from the Mozilla Solo export.
  * Each section maps to one visual block from the original page.
  * Editor labels and helper text are tuned for non-technical maintenance.
+ * Schema synchronized with the homepage content.
  */
 function EditorGuide() {
   return React.createElement(
