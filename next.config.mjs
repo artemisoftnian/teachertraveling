@@ -7,6 +7,11 @@ const nextConfig = {
       { protocol: "https", hostname: "cdn.soloist.ai" },
     ],
   },
+  // Next serves files, not directory indexes, from public/.
+  // Tina writes the editor to public/admin/index.html.
+  async rewrites() {
+    return [{ source: "/admin", destination: "/admin/index.html" }];
+  },
 };
 
 export default nextConfig;

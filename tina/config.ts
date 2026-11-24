@@ -29,7 +29,7 @@ export default defineConfig({
         label: "Pages",
         path: "content/pages",
         format: "md",
-        match: { include: "**/*.md" },
+        match: { include: "**/*" },
         ui: { allowedActions: { create: false, delete: false } },
         fields: [
           { type: "string", name: "title", label: "Page title", isTitle: true, required: true },
